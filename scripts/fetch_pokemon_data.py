@@ -80,7 +80,14 @@ def fetch_all():
                 name_ja = species_name  # フォールバック
 
             # 基本フォルムのポケモンデータ
-            poke_data = get(f"{BASE_URL}/pokemon/{species_name}")
+            # フォルム違いがある場合 species_name では 404 になるため
+            # varieties リストから is_default=True のURLを使う
+            default_url = f"{BASE_URL}/pokemon/{species_name}"
+            for v in species_data.get("varieties", []):
+                if v["is_default"]:
+                    default_url = v["pokemon"]["url"]
+                    break
+            poke_data = get(default_url)
 
             types = [t["type"]["name"] for t in poke_data["types"]
                      if t["type"]["name"] in TYPE_MAP]
