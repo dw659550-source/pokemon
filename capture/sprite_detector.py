@@ -63,6 +63,19 @@ def _make_alpha_mask(img: "Image.Image") -> "np.ndarray | None":
     return None
 
 
+def _make_bg_mask(bgr: "np.ndarray") -> "np.ndarray":
+    """キャプチャアイコンの赤/暗い背景を除いた前景マスクを返す"""
+    hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
+    red = cv2.bitwise_or(
+        cv2.inRange(hsv, np.array([0,   50, 15]), np.array([15,  255, 160])),
+        cv2.inRange(hsv, np.array([160, 50, 15]), np.array([180, 255, 160])),
+    )
+    dark = cv2.inRange(hsv, np.array([0, 0, 0]), np.array([180, 255, 30]))
+    fg = cv2.bitwise_not(cv2.bitwise_or(red, dark))
+    k = np.ones((3, 3), np.uint8)
+    return cv2.morphologyEx(fg, cv2.MORPH_OPEN, k)
+
+
 def _compute_hist(bgr: "np.ndarray", mask: "np.ndarray | None") -> "np.ndarray":
     """HSV 3 チャンネルのヒストグラムを計算・正規化して返す"""
     resized = cv2.resize(bgr, (SPRITE_SIZE, SPRITE_SIZE))
@@ -156,7 +169,8 @@ class SpriteDatabase:
         """
         if not self._hists:
             return []
-        query_hist = _compute_hist(icon_bgr, None)
+        query_mask = _make_bg_mask(icon_bgr)
+        query_hist = _compute_hist(icon_bgr, query_mask)
         scores = []
         for key, tmpl_hist in self._hists.items():
             score = float(cv2.compareHist(query_hist, tmpl_hist, cv2.HISTCMP_CORREL))
