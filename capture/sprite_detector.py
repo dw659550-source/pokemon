@@ -176,6 +176,76 @@ class SpriteDatabase:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# 赤タイル自動検出
+# ─────────────────────────────────────────────────────────────────────────────
+
+def auto_detect_slots(
+    image: "Image.Image",
+    panel_x1: float = 0.75,
+    panel_x2: float = 0.99,
+    n_slots: int = 6,
+) -> list[tuple[int, int, int, int]] | None:
+    """
+    右パネルの赤いタイルをHSV色検出で自動認識し、
+    各スロットの (x1, y1, x2, y2) ピクセル座標リストを返す。
+    失敗時は None。
+    """
+    if not HAS_CV2:
+        return None
+
+    w, h = image.size
+    px1 = int(w * panel_x1)
+    px2 = int(w * panel_x2)
+
+    panel_bgr = cv2.cvtColor(np.array(image.crop((px1, 0, px2, h))), cv2.COLOR_RGB2BGR)
+    hsv = cv2.cvtColor(panel_bgr, cv2.COLOR_BGR2HSV)
+
+    # 暗い赤/マルーン色のマスク（HSV: 赤は H=0〜15 と H=165〜180）
+    mask = cv2.bitwise_or(
+        cv2.inRange(hsv, np.array([0,   80, 30]), np.array([15,  255, 180])),
+        cv2.inRange(hsv, np.array([165, 80, 30]), np.array([180, 255, 180])),
+    )
+    # ノイズ除去
+    k = np.ones((7, 7), np.uint8)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, k)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN,  k)
+
+    # 各行の赤ピクセル数 → パネル幅の20%以上なら「タイル行」
+    row_red = mask.sum(axis=1) / 255
+    threshold = (px2 - px1) * 0.20
+    in_tile = row_red > threshold
+
+    # 連続する赤帯を区間としてまとめる
+    bands: list[tuple[int, int]] = []
+    start = None
+    for y, flag in enumerate(in_tile):
+        if flag and start is None:
+            start = y
+        elif not flag and start is not None:
+            bands.append((start, y))
+            start = None
+    if start is not None:
+        bands.append((start, len(in_tile)))
+
+    # 最小高さ(全体の4%)未満を除外、高さ順に大きい n_slots 個を選ぶ
+    min_h = h * 0.04
+    bands = [(s, e) for s, e in bands if (e - s) >= min_h]
+    bands.sort(key=lambda b: b[1] - b[0], reverse=True)
+    bands = bands[:n_slots]
+    bands.sort(key=lambda b: b[0])  # Y順に並び替え
+
+    if len(bands) < n_slots:
+        logger.warning("赤タイル検出: %d/%d 件のみ検出 (フォールバックに切り替え)", len(bands), n_slots)
+        return None
+
+    # アイコン領域は各タイルの左40%
+    icon_w = int((px2 - px1) * 0.40)
+    slots = [(px1, s, px1 + icon_w, e) for s, e in bands]
+    logger.info("赤タイル自動検出成功: %d スロット", len(slots))
+    return slots
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # チーム検出
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -186,38 +256,37 @@ def detect_opponent_team(
 ) -> list[tuple[str, str, float]]:
     """
     チーム選択画面の右パネルから相手チーム最大6体を検出する。
-
-    Args:
-        image:  全画面キャプチャ（PIL Image）
-        db:     スプライトデータベース
-        config: 領域設定（None の場合 REGION_CONFIG を使用）
-
-    Returns:
-        [(pokemon_key, name_ja, confidence), ...]
+    赤タイルを色検出で自動認識し、失敗時は REGION_CONFIG にフォールバック。
     """
     cfg = config or REGION_CONFIG
     w, h = image.size
 
-    panel_x1 = int(w * cfg["panel_x1"])
-    panel_x2 = int(w * cfg["panel_x2"])
+    # ── まず赤タイルを自動検出 ──
+    slots = auto_detect_slots(image, panel_x1=cfg["panel_x1"], panel_x2=cfg["panel_x2"])
+
+    # ── 失敗時は REGION_CONFIG のフォールバック ──
+    if slots is None:
+        logger.info("フォールバック: REGION_CONFIG を使用")
+        panel_x1 = int(w * cfg["panel_x1"])
+        panel_x2 = int(w * cfg["panel_x2"])
+        slot_w   = panel_x2 - panel_x1
+        ix1_off  = int(slot_w * cfg["icon_x1"])
+        ix2_off  = int(slot_w * cfg["icon_x2"])
+        slots = [
+            (panel_x1 + ix1_off,
+             int(h * top),
+             panel_x1 + ix2_off,
+             int(h * (top + cfg["slot_height"])))
+            for top in cfg["slot_tops"]
+        ]
 
     results = []
-    for top_ratio in cfg["slot_tops"]:
-        y1 = int(h * top_ratio)
-        y2 = int(h * (top_ratio + cfg["slot_height"]))
-        slot_w = panel_x2 - panel_x1
-
-        icon_x1 = panel_x1 + int(slot_w * cfg["icon_x1"])
-        icon_x2 = panel_x1 + int(slot_w * cfg["icon_x2"])
-
-        if icon_x2 <= icon_x1 or y2 <= y1:
+    for ix1, iy1, ix2, iy2 in slots:
+        if ix2 <= ix1 or iy2 <= iy1:
             continue
-
-        # アイコン領域を切り出し
-        icon_img = image.crop((icon_x1, y1, icon_x2, y2))
+        icon_img = image.crop((ix1, iy1, ix2, iy2))
         icon_bgr = _pil_to_bgr(icon_img)
-
-        matches = db.find_best_match(icon_bgr, top_n=1)
+        matches  = db.find_best_match(icon_bgr, top_n=1)
         if matches:
             key, name_ja, score = matches[0]
             results.append((key, name_ja, float(score)))

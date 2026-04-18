@@ -1,18 +1,11 @@
 #!/usr/bin/env python3
 """
 切り出し領域を元画像に描画して確認するスクリプト。
+赤タイルを色で自動検出し、枠を描画します。
 
-使い方:
-  python scripts/visualize_regions.py screenshot.png
-  python scripts/visualize_regions.py screenshot.png --dx 0.02 --dy -0.01  # X右へ2%,Y上へ1%ずらす
-
-引数:
-  --dx  X方向のオフセット調整 (正=右, 負=左)
-  --dy  Y方向のオフセット調整 (正=下, 負=上)
-  --dh  スロット高さ調整 (正=大きく, 負=小さく)
+使い方: python scripts/visualize_regions.py screenshot.png
 """
 import sys
-import argparse
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -23,59 +16,70 @@ except ImportError:
     print("pip install Pillow")
     sys.exit(1)
 
-from capture.sprite_detector import REGION_CONFIG
+try:
+    import cv2, numpy as np
+    HAS_CV2 = True
+except ImportError:
+    HAS_CV2 = False
+
+from capture.sprite_detector import auto_detect_slots, REGION_CONFIG
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("image")
-    parser.add_argument("--dx", type=float, default=0.0, help="X offset adjustment")
-    parser.add_argument("--dy", type=float, default=0.0, help="Y offset adjustment")
-    parser.add_argument("--dh", type=float, default=0.0, help="slot height adjustment")
-    args = parser.parse_args()
+    if len(sys.argv) < 2:
+        print("使い方: python scripts/visualize_regions.py <画像ファイル>")
+        sys.exit(1)
 
-    img = Image.open(args.image).convert("RGB")
+    img = Image.open(sys.argv[1]).convert("RGB")
     w, h = img.size
     print(f"画像サイズ: {w} x {h}")
 
-    cfg = dict(REGION_CONFIG)
-    cfg["panel_x1"] += args.dx
-    cfg["panel_x2"] += args.dx
-    cfg["slot_tops"] = [v + args.dy for v in cfg["slot_tops"]]
-    cfg["slot_height"] += args.dh
-
-    panel_x1 = int(w * cfg["panel_x1"])
-    panel_x2 = int(w * cfg["panel_x2"])
-
-    print(f"\n現在の設定 (オフセット dx={args.dx:+.3f} dy={args.dy:+.3f} dh={args.dh:+.3f}):")
-    print(f"  panel X: {panel_x1} 〜 {panel_x2}  (比率 {cfg['panel_x1']:.3f} 〜 {cfg['panel_x2']:.3f})")
-
+    cfg = REGION_CONFIG
     draw = ImageDraw.Draw(img)
-    draw.rectangle([panel_x1, 0, panel_x2, h], outline=(0, 100, 255), width=3)
 
-    colors = [
-        (255, 60,  60),
-        (255, 160, 0),
-        (80,  210, 80),
-        (0,   200, 220),
-        (180, 0,   255),
-        (255, 230, 0),
-    ]
+    # パネル範囲（青枠）
+    px1 = int(w * cfg["panel_x1"])
+    px2 = int(w * cfg["panel_x2"])
+    draw.rectangle([px1, 0, px2, h], outline=(0, 100, 255), width=3)
 
-    for idx, top_ratio in enumerate(cfg["slot_tops"]):
-        y1 = int(h * top_ratio)
-        y2 = int(h * (top_ratio + cfg["slot_height"]))
-        slot_w = panel_x2 - panel_x1
-        ix1 = panel_x1 + int(slot_w * cfg["icon_x1"])
-        ix2 = panel_x1 + int(slot_w * cfg["icon_x2"])
+    colors = [(255,60,60),(255,160,0),(80,210,80),(0,200,220),(180,0,255),(255,230,0)]
 
-        c = colors[idx % len(colors)]
-        draw.rectangle([panel_x1, y1, panel_x2, y2], outline=c, width=2)
-        draw.rectangle([ix1, y1, ix2, y2], outline=c, width=4)
-        draw.text((ix1 + 4, y1 + 4), f"slot{idx+1}  y={top_ratio:.3f}", fill=c)
-        print(f"  slot{idx+1}: y={y1}〜{y2}px  icon x={ix1}〜{ix2}px  (比率 {top_ratio:.3f})")
+    # 自動検出を試みる
+    slots = auto_detect_slots(img, panel_x1=cfg["panel_x1"], panel_x2=cfg["panel_x2"])
 
-    out = Path(args.image).parent / "region_check.png"
+    if slots:
+        print(f"\n✅ 赤タイル自動検出成功: {len(slots)} スロット")
+        for idx, (ix1, iy1, ix2, iy2) in enumerate(slots):
+            c = colors[idx % len(colors)]
+            # タイル全体の外枠
+            tile_x2 = px2
+            draw.rectangle([px1, iy1, tile_x2, iy2], outline=c, width=2)
+            # アイコン領域（太枠）
+            draw.rectangle([ix1, iy1, ix2, iy2], outline=c, width=4)
+            draw.text((ix1 + 4, iy1 + 4), f"slot{idx+1}", fill=c)
+            print(f"  slot{idx+1}: y={iy1}〜{iy2}px  icon x={ix1}〜{ix2}px")
+
+        # 個別スロット画像を保存
+        out_dir = Path(sys.argv[1]).parent / "sprite_debug"
+        out_dir.mkdir(exist_ok=True)
+        for idx, (ix1, iy1, ix2, iy2) in enumerate(slots):
+            icon = img.crop((ix1, iy1, ix2, iy2))
+            icon.save(out_dir / f"slot{idx+1}.png")
+        print(f"\n切り出し画像: {out_dir}/slot1.png 〜 slot{len(slots)}.png")
+    else:
+        print("\n⚠ 自動検出失敗 → REGION_CONFIG フォールバックで表示")
+        for idx, top in enumerate(cfg["slot_tops"]):
+            y1 = int(h * top)
+            y2 = int(h * (top + cfg["slot_height"]))
+            slot_w = px2 - px1
+            ix1 = px1 + int(slot_w * cfg["icon_x1"])
+            ix2 = px1 + int(slot_w * cfg["icon_x2"])
+            c = colors[idx % len(colors)]
+            draw.rectangle([px1, y1, px2, y2], outline=c, width=2)
+            draw.rectangle([ix1, y1, ix2, y2], outline=c, width=4)
+            draw.text((ix1 + 4, y1 + 4), f"slot{idx+1}", fill=c)
+
+    out = Path(sys.argv[1]).parent / "region_check.png"
     img.save(out)
     print(f"\n保存: {out}")
 
