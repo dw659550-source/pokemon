@@ -30,6 +30,7 @@ except Exception:
 try:
     from capture.screen_capture import list_windows, capture_window, capture_primary_monitor
     from capture.ocr_detector import PokemonOCRDetector
+    from capture.sprite_detector import SpriteDatabase, detect_opponent_team
     HAS_CAPTURE = True
 except Exception:
     HAS_CAPTURE = False
@@ -104,6 +105,33 @@ class OCRWorker(QThread):
             self.error.emit(str(e))
 
 
+class SpriteWorker(QThread):
+    """スクリーンキャプチャ → スプライト照合を別スレッドで実行する"""
+    detected = pyqtSignal(list)   # [(key, name_ja, score), ...]
+    error    = pyqtSignal(str)
+    _db = None  # SpriteDatabase シングルトン
+
+    def __init__(self, window_info=None):
+        super().__init__()
+        self._window_info = window_info
+
+    def run(self):
+        try:
+            if SpriteWorker._db is None:
+                SpriteWorker._db = SpriteDatabase()
+            if self._window_info:
+                img = capture_window(self._window_info)
+            else:
+                img = capture_primary_monitor()
+            if img is None:
+                self.error.emit("キャプチャに失敗しました")
+                return
+            results = detect_opponent_team(img, SpriteWorker._db)
+            self.detected.emit(results)
+        except Exception as e:
+            self.error.emit(str(e))
+
+
 TYPE_JA = {
     "normal": "ノーマル", "fire": "ほのお", "water": "みず",
     "electric": "でんき", "grass": "くさ", "ice": "こおり",
@@ -163,6 +191,52 @@ class SearchableComboBox(QComboBox):
             if self.itemData(i) == key:
                 self.setCurrentIndex(i)
                 return
+
+
+class OpponentTeamWidget(QGroupBox):
+    """スプライト検出で得た相手チームを6つのボタンで表示するパネル"""
+    pokemon_selected = pyqtSignal(str)  # pokemon_key
+
+    def __init__(self, parent=None):
+        super().__init__("相手チーム（スプライト認識）", parent)
+        outer = QVBoxLayout(self)
+        outer.setSpacing(4)
+
+        self._status = QLabel("「スプライト検出」を押すと相手チーム6体を認識します")
+        self._status.setStyleSheet("color:#888; font-size:11px;")
+        outer.addWidget(self._status)
+
+        self._btn_row = QHBoxLayout()
+        self._btn_row.setSpacing(6)
+        outer.addLayout(self._btn_row)
+        self._buttons: list[QPushButton] = []
+
+    def show_team(self, detections: list):
+        """[(key, name_ja, score), ...] を受け取り、ボタンとして表示する"""
+        for btn in self._buttons:
+            btn.deleteLater()
+        self._buttons.clear()
+
+        if not detections:
+            self._status.setText("認識結果なし（スプライトが未ダウンロードの可能性）")
+            return
+
+        self._status.setText("クリックすると相手パネルに反映されます")
+        for key, name_ja, score in detections:
+            pct = int(score * 100)
+            btn = QPushButton(f"{name_ja}\n{pct}%")
+            btn.setFixedSize(88, 48)
+            btn.setToolTip(f"{key}  一致度 {pct}%")
+            # 一致度で色を変える
+            if score >= 0.7:
+                btn.setStyleSheet("background:#27ae60; color:white; border-radius:4px;")
+            elif score >= 0.4:
+                btn.setStyleSheet("background:#e67e22; color:white; border-radius:4px;")
+            else:
+                btn.setStyleSheet("background:#7f8c8d; color:white; border-radius:4px;")
+            btn.clicked.connect(lambda checked, k=key: self.pokemon_selected.emit(k))
+            self._btn_row.addWidget(btn)
+            self._buttons.append(btn)
 
 
 class UsageRateWidget(QGroupBox):
@@ -550,9 +624,9 @@ class BattleStatePanel(QGroupBox):
 # ─────────────────────────────────────────────────────────────────────────────
 
 class CapturePanel(QGroupBox):
-    """画面キャプチャ＋OCR によるポケモン自動検出パネル"""
-    # 検出されたポケモンキーを通知するシグナル
-    pokemon_detected = pyqtSignal(str)   # pokemon_key
+    """画面キャプチャ＋OCR / スプライト認識パネル"""
+    pokemon_detected  = pyqtSignal(str)   # OCR 検出: pokemon_key
+    sprites_detected  = pyqtSignal(list)  # スプライト検出: [(key, name_ja, score), ...]
 
     def __init__(self, parent=None):
         super().__init__("Phase 2 — 画面キャプチャ / 相手自動検出", parent)
@@ -571,13 +645,21 @@ class CapturePanel(QGroupBox):
         self.refresh_btn.clicked.connect(self._refresh_windows)
         layout.addWidget(self.refresh_btn)
 
-        # キャプチャボタン
-        self.capture_btn = QPushButton("相手を検出（OCR）")
+        # OCR ボタン
+        self.capture_btn = QPushButton("テキスト検出（OCR）")
         self.capture_btn.setStyleSheet(
-            "background:#2980b9; color:white; padding:4px 12px; border-radius:4px;"
+            "background:#2980b9; color:white; padding:4px 10px; border-radius:4px;"
         )
         self.capture_btn.clicked.connect(self._start_capture)
         layout.addWidget(self.capture_btn)
+
+        # スプライト検出ボタン
+        self.sprite_btn = QPushButton("相手チーム検出（スプライト）")
+        self.sprite_btn.setStyleSheet(
+            "background:#8e44ad; color:white; padding:4px 10px; border-radius:4px;"
+        )
+        self.sprite_btn.clicked.connect(self._start_sprite)
+        layout.addWidget(self.sprite_btn)
 
         # 結果ラベル
         self.result_lbl = QLabel("")
@@ -636,6 +718,26 @@ class CapturePanel(QGroupBox):
     def _on_error(self, msg: str):
         self.result_lbl.setText(f"エラー: {msg}")
         self.result_lbl.setStyleSheet("color: #c0392b;")
+
+    def _start_sprite(self):
+        if not HAS_CAPTURE:
+            return
+        self.sprite_btn.setEnabled(False)
+        self.result_lbl.setText("スプライト照合中...")
+        self.result_lbl.setStyleSheet("color: #8e44ad;")
+        win = self.win_cb.currentData()
+        self._sprite_worker = SpriteWorker(window_info=win)
+        self._sprite_worker.detected.connect(self._on_sprites)
+        self._sprite_worker.error.connect(self._on_error)
+        self._sprite_worker.finished.connect(lambda: self.sprite_btn.setEnabled(True))
+        self._sprite_worker.start()
+
+    @pyqtSlot(list)
+    def _on_sprites(self, results: list):
+        count = len(results)
+        self.result_lbl.setText(f"スプライト検出: {count} 体")
+        self.result_lbl.setStyleSheet("color: #8e44ad; font-weight: bold;")
+        self.sprites_detected.emit(results)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -751,7 +853,13 @@ class MainWindow(QMainWindow):
         # Phase 2 キャプチャパネル
         self.capture_panel = CapturePanel()
         self.capture_panel.pokemon_detected.connect(self._on_pokemon_detected)
+        self.capture_panel.sprites_detected.connect(self._on_sprites_detected)
         vbox.addWidget(self.capture_panel)
+
+        # 相手チーム検出結果（スプライト）
+        self.opponent_team_widget = OpponentTeamWidget()
+        self.opponent_team_widget.pokemon_selected.connect(self._on_pokemon_detected)
+        vbox.addWidget(self.opponent_team_widget)
 
         # ポケモンパネル（左＝自分、右＝相手）
         panels = QHBoxLayout()
@@ -828,11 +936,16 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(str)
     def _on_pokemon_detected(self, pokemon_key: str):
-        """OCR 検出結果を相手パネルに反映"""
+        """OCR / ボタン選択結果を相手パネルに反映"""
         self.def_panel.pokemon_cb.set_key(pokemon_key)
         pd = _POKEMON.get(pokemon_key, {})
         name = pd.get("name_ja", pokemon_key)
         self.statusBar().showMessage(f"検出: {name} を相手に設定しました")
+
+    @pyqtSlot(list)
+    def _on_sprites_detected(self, results: list):
+        """スプライト検出結果を OpponentTeamWidget に渡す"""
+        self.opponent_team_widget.show_team(results)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
