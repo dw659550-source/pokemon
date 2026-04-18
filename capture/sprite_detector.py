@@ -200,20 +200,19 @@ def auto_detect_slots(
     panel_bgr = cv2.cvtColor(np.array(image.crop((px1, 0, px2, h))), cv2.COLOR_RGB2BGR)
     hsv = cv2.cvtColor(panel_bgr, cv2.COLOR_BGR2HSV)
 
-    # 暗い赤/マルーン色のマスク（HSV: 赤は H=0〜15 と H=165〜180）
+    # 暗い赤/マルーン色のマスク
     mask = cv2.bitwise_or(
         cv2.inRange(hsv, np.array([0,   80, 30]), np.array([15,  255, 180])),
         cv2.inRange(hsv, np.array([165, 80, 30]), np.array([180, 255, 180])),
     )
-    # ノイズ除去
     k = np.ones((7, 7), np.uint8)
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, k)
     mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN,  k)
 
     # 各行の赤ピクセル数 → パネル幅の20%以上なら「タイル行」
-    row_red = mask.sum(axis=1) / 255
+    row_red   = mask.sum(axis=1) / 255
     threshold = (px2 - px1) * 0.20
-    in_tile = row_red > threshold
+    in_tile   = row_red > threshold
 
     # 連続する赤帯を区間としてまとめる
     bands: list[tuple[int, int]] = []
@@ -227,21 +226,28 @@ def auto_detect_slots(
     if start is not None:
         bands.append((start, len(in_tile)))
 
-    # 最小高さ(全体の4%)未満を除外、高さ順に大きい n_slots 個を選ぶ
+    # 小さすぎる帯を除外（全高の4%未満 → ヘッダー等のノイズ）
     min_h = h * 0.04
     bands = [(s, e) for s, e in bands if (e - s) >= min_h]
+
+    # 高さが大きい順に n_slots 個を選んでY順に並べる
     bands.sort(key=lambda b: b[1] - b[0], reverse=True)
     bands = bands[:n_slots]
-    bands.sort(key=lambda b: b[0])  # Y順に並び替え
+    bands.sort(key=lambda b: b[0])
 
     if len(bands) < n_slots:
-        logger.warning("赤タイル検出: %d/%d 件のみ検出 (フォールバックに切り替え)", len(bands), n_slots)
+        logger.warning("赤タイル検出: %d/%d 件のみ検出", len(bands), n_slots)
         return None
 
-    # アイコン領域は各タイルの左40%
-    icon_w = int((px2 - px1) * 0.40)
-    slots = [(px1, s, px1 + icon_w, e) for s, e in bands]
-    logger.info("赤タイル自動検出成功: %d スロット", len(slots))
+    # ── slot1 の高さを基準に全スロットを統一 ──
+    ref_height = bands[0][1] - bands[0][0]
+    icon_w     = int((px2 - px1) * 0.50)   # 横幅はパネル幅の50%
+
+    slots = [
+        (px1, s, px1 + icon_w, s + ref_height)
+        for s, _ in bands
+    ]
+    logger.info("赤タイル自動検出成功: %d スロット (高さ %dpx)", len(slots), ref_height)
     return slots
 
 
