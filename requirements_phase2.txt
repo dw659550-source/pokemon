@@ -1,9 +1,10 @@
 # Phase 2 追加ライブラリ
 # インストール方法: pip install -r requirements_phase2.txt
 
-# 画面キャプチャ
+# 画面キャプチャ・画像処理
 mss==9.0.2
 Pillow>=10.0.0
+opencv-python>=4.8.0
 
 # ウィンドウ列挙（Windows 用）
 pygetwindow==0.0.9
