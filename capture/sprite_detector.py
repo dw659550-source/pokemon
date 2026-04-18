@@ -26,6 +26,7 @@ except ImportError:
 SPRITES_DIR     = Path(__file__).parent.parent / "data" / "sprites"
 POKEMON_PATH    = Path(__file__).parent.parent / "data" / "pokemon.json"
 HIST_CACHE_PATH = Path(__file__).parent.parent / "data" / "sprite_hists.pkl"
+REGION_CONFIG_PATH = Path(__file__).parent.parent / "data" / "region_config.json"
 
 SPRITE_SIZE = 80  # ヒストグラム計算時の正規化サイズ
 
@@ -261,6 +262,17 @@ def auto_detect_slots(
 # チーム検出
 # ─────────────────────────────────────────────────────────────────────────────
 
+def _load_config() -> dict:
+    """data/region_config.json があれば優先して読み込む（なければ REGION_CONFIG）"""
+    if REGION_CONFIG_PATH.exists():
+        try:
+            with open(REGION_CONFIG_PATH, encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return REGION_CONFIG
+
+
 def detect_opponent_team(
     image: "Image.Image",
     db: SpriteDatabase,
@@ -268,9 +280,9 @@ def detect_opponent_team(
 ) -> list[tuple[str, str, float]]:
     """
     チーム選択画面の右パネルから相手チーム最大6体を検出する。
-    赤タイルを色検出で自動認識し、失敗時は REGION_CONFIG にフォールバック。
+    calibrate_slots.py で保存した region_config.json を優先使用。
     """
-    cfg = config or REGION_CONFIG
+    cfg = config or _load_config()
     w, h = image.size
 
     # ── まず赤タイルを自動検出 ──
