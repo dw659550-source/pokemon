@@ -24,7 +24,7 @@ except ImportError:
     print("OpenCV が必要です: pip install opencv-python")
     sys.exit(1)
 
-from capture.sprite_detector import SpriteDatabase, detect_opponent_team, REGION_CONFIG
+from capture.sprite_detector import SpriteDatabase, detect_opponent_team, REGION_CONFIG, _load_config
 
 
 def main():
@@ -66,7 +66,7 @@ def main():
     # 切り出したアイコンを保存（確認用）
     out_dir = Path(img_path).parent / "sprite_debug"
     out_dir.mkdir(exist_ok=True)
-    cfg = REGION_CONFIG
+    cfg = _load_config()
     for idx, top in enumerate(cfg["slot_tops"]):
         x1 = int(w * cfg["panel_x1"])
         x2 = int(w * cfg["panel_x2"])
