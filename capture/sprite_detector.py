@@ -285,8 +285,13 @@ def detect_opponent_team(
     cfg = config or _load_config()
     w, h = image.size
 
-    # ── まず赤タイルを自動検出 ──
-    slots = auto_detect_slots(image, panel_x1=cfg["panel_x1"], panel_x2=cfg["panel_x2"])
+    # region_config.json が存在する場合はキャリブレーション済み座標を優先
+    use_manual = config is None and REGION_CONFIG_PATH.exists()
+    if use_manual:
+        slots = None
+        logger.info("キャリブレーション済み設定を使用 (自動検出スキップ)")
+    else:
+        slots = auto_detect_slots(image, panel_x1=cfg["panel_x1"], panel_x2=cfg["panel_x2"])
 
     # ── 失敗時は REGION_CONFIG のフォールバック ──
     if slots is None:
