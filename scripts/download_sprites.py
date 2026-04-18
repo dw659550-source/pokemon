@@ -55,14 +55,26 @@ def main():
             continue
 
         try:
-            data = get(f"{BASE_URL}/pokemon/{key}").json()
+            poke_url = f"{BASE_URL}/pokemon/{key}"
+            try:
+                poke_data = get(poke_url).json()
+            except Exception:
+                # 404 の場合はスペシーズ経由でデフォルトフォームを取得
+                species_data = get(f"{BASE_URL}/pokemon-species/{key}").json()
+                poke_url = next(
+                    (v["pokemon"]["url"] for v in species_data.get("varieties", [])
+                     if v["is_default"]),
+                    poke_url,
+                )
+                poke_data = get(poke_url).json()
+
             # official-artwork を優先し、なければ通常スプライト
             url = (
-                (data.get("sprites") or {})
+                (poke_data.get("sprites") or {})
                 .get("other", {})
                 .get("official-artwork", {})
                 .get("front_default")
-                or (data.get("sprites") or {}).get("front_default")
+                or (poke_data.get("sprites") or {}).get("front_default")
             )
             if url:
                 out.write_bytes(get(url).content)
