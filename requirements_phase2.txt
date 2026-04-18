@@ -1,0 +1,17 @@
+# Phase 2 追加ライブラリ
+# インストール方法: pip install -r requirements_phase2.txt
+
+# 画面キャプチャ
+mss==9.0.2
+Pillow>=10.0.0
+
+# ウィンドウ列挙（Windows 用）
+pygetwindow==0.0.9
+
+# OCR（日本語対応）
+easyocr>=1.7.1
+numpy>=1.24.0
+
+# 使用率スクレイピング
+beautifulsoup4>=4.12.0
+requests>=2.28.0
