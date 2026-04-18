@@ -226,7 +226,11 @@ def auto_detect_slots(
     if start is not None:
         bands.append((start, len(in_tile)))
 
-    # 小さすぎる帯を除外（全高の4%未満 → ヘッダー等のノイズ）
+    # 上端10%はヘッダー（「pomelo」表示行）なので除外
+    header_limit = int(len(in_tile) * 0.10)
+    bands = [(s, e) for s, e in bands if s >= header_limit]
+
+    # 小さすぎる帯を除外（全高の4%未満）
     min_h = h * 0.04
     bands = [(s, e) for s, e in bands if (e - s) >= min_h]
 
@@ -239,15 +243,17 @@ def auto_detect_slots(
         logger.warning("赤タイル検出: %d/%d 件のみ検出", len(bands), n_slots)
         return None
 
-    # ── slot1 の高さを基準に全スロットを統一 ──
-    ref_height = bands[0][1] - bands[0][0]
-    icon_w     = int((px2 - px1) * 0.50)   # 横幅はパネル幅の50%
+    # 中央値の高さを基準にして全スロットを統一（外れ値に強い）
+    # 0.88 倍でタイル境界へのはみ出しを防ぐ
+    heights    = sorted(e - s for s, e in bands)
+    ref_height = int(heights[len(heights) // 2] * 0.88)
+    icon_w     = int((px2 - px1) * 0.30)   # 横幅はパネル幅の30%（アイテムアイコン除外）
 
     slots = [
         (px1, s, px1 + icon_w, s + ref_height)
         for s, _ in bands
     ]
-    logger.info("赤タイル自動検出成功: %d スロット (高さ %dpx)", len(slots), ref_height)
+    logger.info("赤タイル自動検出成功: %d スロット (高さ %dpx 幅 %dpx)", len(slots), ref_height, icon_w)
     return slots
 
 
