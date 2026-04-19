@@ -4,13 +4,12 @@ pokechamdb.com から各ポケモンの使用率データ（技・持ち物・�
 import json
 import re
 import logging
-import time
 import urllib.parse
 from pathlib import Path
 
 try:
     import requests
-    from bs4 import BeautifulSoup, NavigableString
+    from bs4 import BeautifulSoup
     HAS_DEPS = True
 except ImportError:
     HAS_DEPS = False
@@ -86,13 +85,6 @@ def _pct_from_text(text: str) -> float | None:
     return None
 
 
-def _pct_from_style(style: str) -> float | None:
-    """style 属性の width: XX% から数値を抽出"""
-    m = re.search(r'width\s*:\s*(\d+\.?\d*)\s*%', style)
-    if m:
-        return float(m.group(1))
-    return None
-
 
 def _is_junk_name(name: str) -> bool:
     """ランク番号・日付・統計値など名前として無効な文字列を弾く"""
@@ -116,17 +108,10 @@ def _parse_page(html: str) -> dict:
 
     logger.debug("Page title: %s", soup.title.string if soup.title else "N/A")
 
-    # ── 方法1: style="width: XX%" を持つ要素（Tailwind プログレスバー）──
-    # pokechamdb.com では各行が
-    #   <div class="flex ...">
-    #     <span>技名</span>
-    #     <div class="relative flex-1">
-    #       <div class="absolute bg-gradient-to-r ..." style="width: 75.3%"></div>
-    #     </div>
-    #     <span>75.3%</span>   ← あるいは % テキストがここ
-    #   </div>
-    # のような構造と推定される。
-    _parse_style_width_bars(soup, result)
+    # ── 方法1: pokechamdb.com 専用パーサー ──
+    # 構造: rounded-2xl カード div のヘッダーで MOVES/ITEMS/PARTNERS を判定し、
+    # 内部の <li class="flex items-center gap-2"> から [名前, XX%] を抽出する。
+    _parse_pokechamdb(soup, result)
 
     # ── 方法2: h2/h3 見出しでセクション分け ──
     if not any(result.values()):
@@ -145,107 +130,74 @@ def _parse_page(html: str) -> dict:
     return result
 
 
-# ── セクション見出しキーワード ──────────────────────────────────────────────
-_SECTION_KEYWORDS: dict[str, list[str]] = {
-    "moves":    ["技", "わざ", "move", "わざ使用率"],
-    "items":    ["持ち物", "もちもの", "item", "道具", "持ち物使用率"],
-    "partners": ["パートナー", "相方", "partner", "一緒", "よく一緒"],
-}
+def _parse_pokechamdb(soup, result: dict):
+    """
+    pokechamdb.com 専用パーサー。
+
+    ページ構造（2026年4月確認）:
+      <section class="grid ...">
+        <div class="rounded-2xl border border-violet-100 ...">
+          ヘッダーに "MOVES わざ" / "ITEMS もちもの" / "MATES パートナー" 等
+          <ul>
+            <li class="flex items-center gap-2">
+              <span>じしん</span>
+              <span>99%</span>
+            </li>
+            ...
+          </ul>
+        </div>
+        ...
+      </section>
+    """
+    CARD_HEADER_MAP = {
+        "moves":    ["moves", "わざ", "技", "move"],
+        "items":    ["items", "もちもの", "持ち物", "item"],
+        "partners": ["mates", "partner", "パートナー", "相方"],
+    }
+
+    # rounded-2xl を含む div または section を全て走査
+    cards = soup.find_all(["div", "section"], class_=re.compile(r'rounded-2xl|rounded-3xl'))
+    for card in cards:
+        # カードのヘッダーテキストを取得（最初の数十文字で判定）
+        header_text = card.get_text(" ", strip=True)[:40].lower()
+        cat = None
+        for category, keywords in CARD_HEADER_MAP.items():
+            if any(kw in header_text for kw in keywords):
+                cat = category
+                break
+        if cat is None:
+            continue
+
+        # <li class="flex items-center gap-2"> を探す
+        items_found = []
+        for li in card.find_all("li", class_=re.compile(r'flex')):
+            texts = [s.get_text(strip=True) for s in li.children
+                     if hasattr(s, "get_text") and s.get_text(strip=True)]
+            if len(texts) < 2:
+                continue
+            # 最後の % テキストを割合として扱う
+            pct = None
+            name = None
+            for t in reversed(texts):
+                if pct is None:
+                    p = _pct_from_text(t)
+                    if p is not None and p > 0:
+                        pct = p
+                        continue
+                if pct is not None and name is None:
+                    if not _is_junk_name(t):
+                        name = t
+                        break
+            if name and pct is not None:
+                items_found.append((name, pct))
+
+        if items_found and not result[cat]:
+            result[cat] = items_found[:10]
+
+
 
 _EV_STAT_NAMES = {"hp", "攻", "防", "特攻", "特防", "素早", "採用率", "順位",
-                  "hp", "atk", "def", "spa", "spd", "spe"}
-
-def _guess_section(text: str) -> str | None:
-    t = text.lower()
-    for cat, kws in _SECTION_KEYWORDS.items():
-        if any(kw in t for kw in kws):
-            return cat
-    return None
-
-
-def _parse_style_width_bars(soup, result: dict):
-    """
-    style="width: XX%" を持つ div をプログレスバーとみなし、
-    親フレックス行から名前・割合を抽出する。
-    セクションは直近の見出しで判定。
-    """
-    current_section: str | None = None
-    collected: dict[str, list] = {"moves": [], "items": [], "partners": []}
-
-    # ドキュメント順に走査
-    for elem in soup.find_all(True):
-        # 見出しに当たったらセクションを更新
-        if elem.name in ("h1", "h2", "h3", "h4", "h5", "h6"):
-            txt = elem.get_text(strip=True)
-            cat = _guess_section(txt)
-            if cat:
-                current_section = cat
-            elif current_section:
-                # 無関係な見出しが来たらリセット（EV見出し等）
-                ev_like = any(kw in txt for kw in ["努力値", "EV", "種族値", "採用率"])
-                if ev_like:
-                    current_section = None
-            continue
-
-        # style="width: XX%" を持つ要素
-        style = elem.get("style", "")
-        if not style:
-            continue
-        pct = _pct_from_style(style)
-        if pct is None or pct <= 0:
-            continue
-
-        # 親の行（flex コンテナ）からテキストを収集
-        row = elem.parent
-        if row is None:
-            continue
-        # 2階層まで遡って flex 行を探す
-        for _ in range(3):
-            cls = " ".join(row.get("class", []))
-            if "flex" in cls or row.name in ("li", "tr"):
-                break
-            if row.parent:
-                row = row.parent
-
-        # 行内の直接テキストノードまたは子テキストを収集
-        texts = []
-        for child in row.children:
-            if isinstance(child, NavigableString):
-                t = child.strip()
-                if t:
-                    texts.append(t)
-            elif hasattr(child, "get_text"):
-                # バー要素はスキップ
-                if child.get("style") and "width" in child.get("style", ""):
-                    continue
-                t = child.get_text(strip=True)
-                if t:
-                    texts.append(t)
-
-        # % テキスト・ランク番号・ゴミを除いた名前候補
-        name = ""
-        for t in texts:
-            if _pct_from_text(t) is not None:
-                continue
-            if re.fullmatch(r'\d+', t):
-                continue
-            if _is_junk_name(t):
-                continue
-            name = t
-            break
-
-        if not name:
-            continue
-
-        if current_section:
-            collected[current_section].append((name, pct))
-        else:
-            # セクション不明 → 後で分類を試みる
-            logger.debug("section unknown for %r pct=%.1f", name, pct)
-
-    for cat in ("moves", "items", "partners"):
-        if collected[cat]:
-            result[cat] = collected[cat][:10]
+                  "atk", "def", "spa", "spd", "spe"}
 
 
 def _parse_by_heading(soup, result: dict):
