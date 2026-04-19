@@ -314,29 +314,40 @@ class PokemonTypeInfoWidget(QGroupBox):
         def_types = pd.get("types", [])
         matchup   = compute_type_matchup(def_types)
 
-        # ── タイプ相性行 ──
+        # ── タイプ相性行（5個超で折り返し）──
+        MAX_PER_ROW = 5
         for key, label, color in self._ROW_LABELS:
             types = matchup[key]
             if not types:
                 continue
-            row = QWidget()
-            hl  = QHBoxLayout(row)
-            hl.setContentsMargins(2, 0, 2, 0)
-            hl.setSpacing(4)
-            lbl = QLabel(f"{label}:")
-            lbl.setFixedWidth(62)
-            lbl.setStyleSheet(f"font-size:11px; font-weight:bold; color:{color};")
-            hl.addWidget(lbl)
-            for t in types:
-                badge = QLabel(TYPE_JA.get(t, t))
-                badge.setStyleSheet(
-                    f"background:{TYPE_COLOR.get(t,'#888')}; color:white;"
-                    f" padding:1px 6px; border-radius:3px; font-size:11px;"
-                )
-                hl.addWidget(badge)
-            hl.addStretch()
-            self._vbox.addWidget(row)
-            self._rows.append(row)
+            for chunk_i, start in enumerate(range(0, len(types), MAX_PER_ROW)):
+                chunk = types[start:start + MAX_PER_ROW]
+                row = QWidget()
+                hl  = QHBoxLayout(row)
+                hl.setContentsMargins(2, 0, 2, 0)
+                hl.setSpacing(4)
+                if chunk_i == 0:
+                    lbl = QLabel(f"{label}:")
+                    lbl.setFixedWidth(62)
+                    lbl.setStyleSheet(
+                        f"font-size:11px; font-weight:bold; color:{color};"
+                    )
+                else:
+                    # 折り返し行はラベル幅分インデント
+                    spacer = QLabel("")
+                    spacer.setFixedWidth(62)
+                    lbl = spacer
+                hl.addWidget(lbl)
+                for t in chunk:
+                    badge = QLabel(TYPE_JA.get(t, t))
+                    badge.setStyleSheet(
+                        f"background:{TYPE_COLOR.get(t,'#888')}; color:white;"
+                        f" padding:1px 6px; border-radius:3px; font-size:11px;"
+                    )
+                    hl.addWidget(badge)
+                hl.addStretch()
+                self._vbox.addWidget(row)
+                self._rows.append(row)
 
         # ── 区切り線 ──
         sep = QFrame()
@@ -1152,7 +1163,7 @@ class MainWindow(QMainWindow):
         info_scroll = QScrollArea()
         info_scroll.setWidget(self.info_widget)
         info_scroll.setWidgetResizable(True)
-        info_scroll.setFixedWidth(300)
+        info_scroll.setFixedWidth(400)
         info_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         body.addWidget(info_scroll)
 
