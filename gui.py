@@ -526,7 +526,8 @@ class PokemonPanel(QGroupBox):
 
     def _build_ui(self):
         root = QVBoxLayout(self)
-        root.setSpacing(6)
+        root.setSpacing(4)
+        root.setContentsMargins(6, 6, 6, 6)
 
         # ── ポケモン名 + レベル ──
         r = QHBoxLayout()
@@ -1008,7 +1009,7 @@ class ResultTable(QTableWidget):
         self.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.setAlternatingRowColors(True)
         self.verticalHeader().setVisible(False)
-        self.setMinimumHeight(150)
+        self.setMinimumHeight(100)
 
     def show_results(self, results):
         self.setRowCount(0)
@@ -1064,7 +1065,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("ポケモンチャンピオンズ ダメージ計算ツール v2.0")
-        self.setMinimumSize(1360, 900)
+        self.setMinimumSize(900, 600)
         self._build_ui()
         self._timer = QTimer(self)
         self._timer.setSingleShot(True)
@@ -1081,17 +1082,8 @@ class MainWindow(QMainWindow):
         root = QWidget()
         self.setCentralWidget(root)
         outer = QVBoxLayout(root)
-        outer.setSpacing(6)
-        outer.setContentsMargins(10, 10, 10, 10)
-
-        # ── タイトル（全幅）──
-        title = QLabel("ポケモンチャンピオンズ  ダメージ計算ツール")
-        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title.setStyleSheet(
-            "font-size: 17px; font-weight: bold; "
-            "padding: 8px; background: #2c3e50; color: white; border-radius: 6px;"
-        )
-        outer.addWidget(title)
+        outer.setSpacing(4)
+        outer.setContentsMargins(6, 6, 6, 6)
 
         # ── 監視パネル群（全幅）──
         self.battle_monitor_widget = BattleMonitorWidget()
@@ -1113,17 +1105,17 @@ class MainWindow(QMainWindow):
 
         # 左：ポケモンパネル・状態・ダメージテーブル
         left = QVBoxLayout()
-        left.setSpacing(6)
+        left.setSpacing(4)
 
         panels = QHBoxLayout()
-        panels.setSpacing(10)
+        panels.setSpacing(6)
         self.atk_panel = PokemonPanel("⚔   自分のポケモン")
         self.def_panel = PokemonPanel("🛡   相手のポケモン")
         for panel in (self.atk_panel, self.def_panel):
             scroll = QScrollArea()
             scroll.setWidget(panel)
             scroll.setWidgetResizable(True)
-            scroll.setMinimumWidth(380)
+            scroll.setMinimumWidth(300)
             panels.addWidget(scroll)
         left.addLayout(panels, stretch=4)
 
