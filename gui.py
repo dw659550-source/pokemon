@@ -291,10 +291,12 @@ class PokemonTypeInfoWidget(QGroupBox):
 
     def __init__(self, parent=None):
         super().__init__("相手ポケモン情報（タイプ相性・特性）", parent)
+        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.MinimumExpanding)
         self._vbox = QVBoxLayout(self)
-        self._vbox.setSpacing(3)
+        self._vbox.setSpacing(4)
+        self._vbox.setAlignment(Qt.AlignmentFlag.AlignTop)
         self._rows: list[QWidget] = []
-        self._hint = QLabel("ポケモンを選ぶと弱点・耐性・特性が表示されます")
+        self._hint = QLabel("ポケモンを選ぶと\n弱点・耐性・特性が表示されます")
         self._hint.setStyleSheet("color:#888; font-size:11px;")
         self._vbox.addWidget(self._hint)
 
@@ -1062,7 +1064,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("ポケモンチャンピオンズ ダメージ計算ツール v2.0")
-        self.setMinimumSize(1060, 900)
+        self.setMinimumSize(1360, 900)
         self._build_ui()
         self._timer = QTimer(self)
         self._timer.setSingleShot(True)
@@ -1078,36 +1080,41 @@ class MainWindow(QMainWindow):
     def _build_ui(self):
         root = QWidget()
         self.setCentralWidget(root)
-        vbox = QVBoxLayout(root)
-        vbox.setSpacing(8)
-        vbox.setContentsMargins(10, 10, 10, 10)
+        outer = QVBoxLayout(root)
+        outer.setSpacing(6)
+        outer.setContentsMargins(10, 10, 10, 10)
 
-        # タイトル
+        # ── タイトル（全幅）──
         title = QLabel("ポケモンチャンピオンズ  ダメージ計算ツール")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title.setStyleSheet(
             "font-size: 17px; font-weight: bold; "
             "padding: 8px; background: #2c3e50; color: white; border-radius: 6px;"
         )
-        vbox.addWidget(title)
+        outer.addWidget(title)
 
-        # 対戦中リアルタイム監視パネル
+        # ── 監視パネル群（全幅）──
         self.battle_monitor_widget = BattleMonitorWidget()
         self.battle_monitor_widget.opponent_detected.connect(self._on_battle_detected)
-        vbox.addWidget(self.battle_monitor_widget)
+        outer.addWidget(self.battle_monitor_widget)
 
-        # Phase 2 キャプチャパネル
         self.capture_panel = CapturePanel()
         self.capture_panel.pokemon_detected.connect(self._on_pokemon_detected)
         self.capture_panel.sprites_detected.connect(self._on_sprites_detected)
-        vbox.addWidget(self.capture_panel)
+        outer.addWidget(self.capture_panel)
 
-        # 相手チーム検出結果（スプライト）
         self.opponent_team_widget = OpponentTeamWidget()
         self.opponent_team_widget.pokemon_selected.connect(self._on_pokemon_detected)
-        vbox.addWidget(self.opponent_team_widget)
+        outer.addWidget(self.opponent_team_widget)
 
-        # ポケモンパネル（左＝自分、右＝相手）
+        # ── メインコンテンツ + 右サイドバー ──
+        body = QHBoxLayout()
+        body.setSpacing(8)
+
+        # 左：ポケモンパネル・状態・ダメージテーブル
+        left = QVBoxLayout()
+        left.setSpacing(6)
+
         panels = QHBoxLayout()
         panels.setSpacing(10)
         self.atk_panel = PokemonPanel("⚔   自分のポケモン")
@@ -1116,24 +1123,21 @@ class MainWindow(QMainWindow):
             scroll = QScrollArea()
             scroll.setWidget(panel)
             scroll.setWidgetResizable(True)
-            scroll.setMinimumWidth(400)
+            scroll.setMinimumWidth(380)
             panels.addWidget(scroll)
-        vbox.addLayout(panels, stretch=4)
+        left.addLayout(panels, stretch=4)
 
-        # 対戦状態パネル
         self.state_panel = BattleStatePanel()
-        vbox.addWidget(self.state_panel)
+        left.addWidget(self.state_panel)
 
-        # 結果テーブル＋使用率
         result_row = QHBoxLayout()
-        result_row.setSpacing(10)
+        result_row.setSpacing(8)
 
         atk_grp = QGroupBox("⚔   自分 → 相手（与えるダメージ）")
         atk_lay = QVBoxLayout(atk_grp)
         self.atk_table = ResultTable()
         atk_lay.addWidget(self.atk_table)
 
-        # 相手側：ダメージ表 + 使用率
         def_col = QVBoxLayout()
         def_grp = QGroupBox("🛡   相手 → 自分（受けるダメージ）")
         def_lay = QVBoxLayout(def_grp)
@@ -1141,17 +1145,26 @@ class MainWindow(QMainWindow):
         def_lay.addWidget(self.def_table)
         def_col.addWidget(def_grp)
 
-        self.info_widget = PokemonTypeInfoWidget()
-        self.info_widget.setMaximumHeight(240)
-        def_col.addWidget(self.info_widget)
-
         self.usage_widget = UsageRateWidget()
         self.usage_widget.setMaximumHeight(200)
         def_col.addWidget(self.usage_widget)
 
         result_row.addWidget(atk_grp)
         result_row.addLayout(def_col)
-        vbox.addLayout(result_row, stretch=2)
+        left.addLayout(result_row, stretch=2)
+
+        body.addLayout(left, stretch=1)
+
+        # 右サイドバー：タイプ相性・特性
+        self.info_widget = PokemonTypeInfoWidget()
+        info_scroll = QScrollArea()
+        info_scroll.setWidget(self.info_widget)
+        info_scroll.setWidgetResizable(True)
+        info_scroll.setFixedWidth(300)
+        info_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        body.addWidget(info_scroll)
+
+        outer.addLayout(body, stretch=1)
 
         self.statusBar().showMessage("準備完了  —  ポケモンと技を選ぶと自動計算されます")
 
