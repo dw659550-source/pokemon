@@ -279,6 +279,7 @@ class UsageRateWidget(QGroupBox):
 
     def _clear_labels(self):
         for lbl in self._move_labels + self._item_labels:
+            self._layout.removeWidget(lbl)
             lbl.deleteLater()
         self._move_labels.clear()
         self._item_labels.clear()
@@ -575,6 +576,21 @@ class BattleStatePanel(QGroupBox):
         super().__init__("⚙  対戦状態", parent)
         layout = QHBoxLayout(self)
 
+        # ── バトル形式 ──
+        layout.addWidget(QLabel("形式"))
+        self.format_cb = QComboBox()
+        self.format_cb.addItem("シングル", userData="single")
+        self.format_cb.addItem("ダブル",   userData="double")
+        self.format_cb.setFixedWidth(80)
+        layout.addWidget(self.format_cb)
+
+        # ダブル時のみ表示：全体技チェック
+        self.spread_cb = QCheckBox("全体技（×0.75）")
+        self.spread_cb.setVisible(False)
+        layout.addWidget(self.spread_cb)
+        self.format_cb.currentIndexChanged.connect(self._on_format_changed)
+
+        layout.addSpacing(12)
         layout.addWidget(QLabel("天気"))
         self.weather_cb = QComboBox()
         for k, lbl in [("none","なし"),("sun","晴れ"),("rain","雨"),
@@ -582,7 +598,7 @@ class BattleStatePanel(QGroupBox):
             self.weather_cb.addItem(lbl, userData=k)
         layout.addWidget(self.weather_cb)
 
-        layout.addSpacing(16)
+        layout.addSpacing(12)
         layout.addWidget(QLabel("フィールド"))
         self.terrain_cb = QComboBox()
         for k, lbl in [("none","なし"),("electric","エレキ"),("grassy","グラス"),
@@ -590,24 +606,33 @@ class BattleStatePanel(QGroupBox):
             self.terrain_cb.addItem(lbl, userData=k)
         layout.addWidget(self.terrain_cb)
 
-        layout.addSpacing(16)
+        layout.addSpacing(12)
         layout.addWidget(QLabel("【自分】"))
         self.burn_atk  = QCheckBox("やけど")
         self.crit_cb   = QCheckBox("急所")
         layout.addWidget(self.burn_atk)
         layout.addWidget(self.crit_cb)
 
-        layout.addSpacing(16)
+        layout.addSpacing(12)
         layout.addWidget(QLabel("【相手】"))
         self.burn_def = QCheckBox("やけど")
         layout.addWidget(self.burn_def)
 
         layout.addStretch()
 
-        for w in [self.weather_cb, self.terrain_cb,
-                  self.burn_atk, self.crit_cb, self.burn_def]:
+        for w in [self.format_cb, self.weather_cb, self.terrain_cb,
+                  self.burn_atk, self.crit_cb, self.burn_def, self.spread_cb]:
             (w.currentIndexChanged if isinstance(w, QComboBox)
              else w.stateChanged).connect(self.changed.emit)
+
+    def _on_format_changed(self):
+        is_double = self.format_cb.currentData() == "double"
+        self.spread_cb.setVisible(is_double)
+        if not is_double:
+            self.spread_cb.setChecked(False)
+
+    def is_double(self) -> bool:
+        return self.format_cb.currentData() == "double"
 
     def atk_state(self) -> BattleState:
         return BattleState(
@@ -615,6 +640,7 @@ class BattleStatePanel(QGroupBox):
             terrain=self.terrain_cb.currentData(),
             burned=self.burn_atk.isChecked(),
             is_critical=self.crit_cb.isChecked(),
+            is_spread=self.spread_cb.isChecked(),
         )
 
     def def_state(self) -> BattleState:

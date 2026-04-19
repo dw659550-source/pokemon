@@ -5,7 +5,9 @@ mss で画面をキャプチャ → HP バー領域の変化検出 → EasyOCR �
 import difflib
 import json
 import logging
+import re
 import time
+import unicodedata
 from pathlib import Path
 
 import numpy as np
@@ -67,26 +69,77 @@ def _get_name_map() -> dict[str, str]:
     return _name_map_cache
 
 
+def _normalize(s: str) -> str:
+    """OCR ノイズ除去・文字正規化（半角カタカナ→全角、記号除去など）"""
+    s = unicodedata.normalize("NFKC", s)          # 半角カナ→全角、全角英数→半角
+    s = re.sub(r"[♂♀☆★◯×・/\-\s　]", "", s)   # ゴミ文字・スペース除去
+    s = re.sub(r"Lv\.?\d+", "", s)                # "Lv.50" などを除去
+    s = re.sub(r"\d+/\d+", "", s)                 # "120/340" などHP表示除去
+    return s.strip()
+
+
+# OCR が混同しやすい文字の置換候補（カタカナ）
+_OCR_SUBS: list[tuple[str, str]] = [
+    ("ン", "ソ"), ("ソ", "ン"),
+    ("リ", "リ"), ("ウ", "ヴ"),
+    ("ー", "一"), ("一", "ー"),
+]
+
+
+def _ocr_variants(text: str) -> list[str]:
+    """OCR 誤読パターンの代替候補を生成"""
+    variants = [text]
+    for src, dst in _OCR_SUBS:
+        if src in text:
+            variants.append(text.replace(src, dst, 1))
+    return variants
+
+
 def match_pokemon_name(text: str) -> tuple[str, str] | tuple[None, None]:
-    """OCR テキストをポケモン名にマッチング。(key, name_ja) または (None, None)"""
+    """
+    OCR テキストをポケモン名にマッチング。
+    正規化 → 完全一致 → 部分一致 → ファジーマッチ の順に試みる。
+    Returns: (key, name_ja) または (None, None)
+    """
     name_map = _get_name_map()
     if not text or not name_map:
         return None, None
 
-    # 完全一致
-    if text in name_map:
-        return name_map[text], text
+    text_n = _normalize(text)
+    if not text_n:
+        return None, None
 
-    # 部分一致（OCR が前後に余計な文字を含む場合）
-    for name, key in name_map.items():
-        if name in text:
-            return key, name
+    # 正規化済みの name_ja → (原文, key) マップを構築
+    norm_map: dict[str, tuple[str, str]] = {
+        _normalize(n): (n, k) for n, k in name_map.items()
+    }
 
-    # ファジーマッチ
-    candidates = difflib.get_close_matches(text, name_map.keys(), n=1, cutoff=0.65)
+    # ① 完全一致（正規化後）
+    if text_n in norm_map:
+        orig, key = norm_map[text_n]
+        return key, orig
+
+    # ② 部分一致（正規化後）: name が text に含まれる / text が name に含まれる
+    for n_norm, (orig, key) in norm_map.items():
+        if n_norm and (n_norm in text_n or text_n in n_norm):
+            return key, orig
+
+    # ③ OCR 誤読バリアントで再試行
+    for variant in _ocr_variants(text_n):
+        if variant == text_n:
+            continue
+        if variant in norm_map:
+            orig, key = norm_map[variant]
+            return key, orig
+        for n_norm, (orig, key) in norm_map.items():
+            if n_norm and (n_norm in variant or variant in n_norm):
+                return key, orig
+
+    # ④ ファジーマッチ（閾値を少し下げて拾いやすくする）
+    candidates = difflib.get_close_matches(text_n, norm_map.keys(), n=1, cutoff=0.60)
     if candidates:
-        best = candidates[0]
-        return name_map[best], best
+        orig, key = norm_map[candidates[0]]
+        return key, orig
 
     return None, None
 
