@@ -279,26 +279,31 @@ class OpponentTeamWidget(QGroupBox):
 
 
 class PokemonTypeInfoWidget(QGroupBox):
-    """相手ポケモンのタイプ相性・特性を表示するパネル"""
+    """相手ポケモンのタイプ相性・特性を縦リストで表示するパネル"""
 
-    _ROW_LABELS = [
-        ("x4",    "弱点×4", "#c0392b"),
-        ("x2",    "弱点×2", "#e67e22"),
-        ("x0.5",  "耐性×½", "#2980b9"),
-        ("x0.25", "耐性×¼", "#1a5276"),
-        ("x0",    "無　効",  "#7f8c8d"),
-    ]
+    # effectiveness → (バー幅px, バー色)
+    _BAR = {
+        4.0:  (80, "#c0392b"),
+        2.0:  (50, "#e67e22"),
+        0.5:  (30, "#2980b9"),
+        0.25: (15, "#1a5276"),
+    }
 
     def __init__(self, parent=None):
-        super().__init__("相手ポケモン情報（タイプ相性・特性）", parent)
+        super().__init__("タイプ相性・特性", parent)
         self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.MinimumExpanding)
         self._vbox = QVBoxLayout(self)
-        self._vbox.setSpacing(4)
+        self._vbox.setSpacing(2)
+        self._vbox.setContentsMargins(6, 6, 6, 6)
         self._vbox.setAlignment(Qt.AlignmentFlag.AlignTop)
         self._rows: list[QWidget] = []
-        self._hint = QLabel("ポケモンを選ぶと\n弱点・耐性・特性が表示されます")
+        self._hint = QLabel("ポケモンを選ぶと表示されます")
         self._hint.setStyleSheet("color:#888; font-size:11px;")
         self._vbox.addWidget(self._hint)
+
+    def _add(self, w: QWidget):
+        self._vbox.addWidget(w)
+        self._rows.append(w)
 
     def refresh(self, pokemon_key: str):
         for w in self._rows:
@@ -312,68 +317,74 @@ class PokemonTypeInfoWidget(QGroupBox):
         self._hint.setText("")
 
         def_types = pd.get("types", [])
-        matchup   = compute_type_matchup(def_types)
 
-        # ── タイプ相性行（5個超で折り返し）──
-        MAX_PER_ROW = 5
-        for key, label, color in self._ROW_LABELS:
-            types = matchup[key]
-            if not types:
-                continue
-            for chunk_i, start in enumerate(range(0, len(types), MAX_PER_ROW)):
-                chunk = types[start:start + MAX_PER_ROW]
-                row = QWidget()
-                hl  = QHBoxLayout(row)
-                hl.setContentsMargins(2, 0, 2, 0)
-                hl.setSpacing(4)
-                if chunk_i == 0:
-                    lbl = QLabel(f"{label}:")
-                    lbl.setFixedWidth(62)
-                    lbl.setStyleSheet(
-                        f"font-size:11px; font-weight:bold; color:{color};"
-                    )
-                else:
-                    # 折り返し行はラベル幅分インデント
-                    spacer = QLabel("")
-                    spacer.setFixedWidth(62)
-                    lbl = spacer
-                hl.addWidget(lbl)
-                for t in chunk:
-                    badge = QLabel(TYPE_JA.get(t, t))
-                    badge.setStyleSheet(
-                        f"background:{TYPE_COLOR.get(t,'#888')}; color:white;"
-                        f" padding:1px 6px; border-radius:3px; font-size:11px;"
-                    )
-                    hl.addWidget(badge)
-                hl.addStretch()
-                self._vbox.addWidget(row)
-                self._rows.append(row)
+        # ── タイプ相性を縦リスト ──
+        rows: list[tuple[float, str]] = []
+        for atk in _ALL_TYPES:
+            eff = 1.0
+            for d in def_types:
+                eff *= _TYPE_CHART.get(atk, {}).get(d, 1.0)
+            if eff != 1.0:
+                rows.append((eff, atk))
+        rows.sort(key=lambda x: x[0], reverse=True)
+
+        for eff, atk in rows:
+            row = QWidget()
+            hl  = QHBoxLayout(row)
+            hl.setContentsMargins(2, 1, 2, 1)
+            hl.setSpacing(6)
+
+            # タイプバッジ
+            badge = QLabel(TYPE_JA.get(atk, atk))
+            badge.setFixedWidth(58)
+            badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            badge.setStyleSheet(
+                f"background:{TYPE_COLOR.get(atk,'#888')}; color:white;"
+                f" padding:1px 4px; border-radius:3px; font-size:11px;"
+            )
+            hl.addWidget(badge)
+
+            if eff == 0.0:
+                note = QLabel("×0　（全く効かない）")
+                note.setStyleSheet("color:#999; font-size:11px;")
+                hl.addWidget(note)
+            else:
+                bar_w, bar_col = self._BAR.get(eff, (int(eff * 25), "#888"))
+                bar = QLabel("")
+                bar.setFixedSize(bar_w, 12)
+                bar.setStyleSheet(f"background:{bar_col}; border-radius:2px;")
+                hl.addWidget(bar)
+                mult = QLabel(f"×{eff:g}")
+                mult.setStyleSheet("font-size:11px; font-weight:bold;")
+                hl.addWidget(mult)
+
+            hl.addStretch()
+            self._add(row)
 
         # ── 区切り線 ──
         sep = QFrame()
         sep.setFrameShape(QFrame.Shape.HLine)
-        sep.setStyleSheet("color:#ddd; margin:2px 0;")
-        self._vbox.addWidget(sep)
-        self._rows.append(sep)
+        sep.setStyleSheet("color:#ddd; margin:3px 0;")
+        self._add(sep)
 
         # ── 特性 ──
         ab_data = _load_abilities()
         for ab_key in pd.get("abilities", []):
-            ab     = ab_data.get(ab_key, {})
-            name   = ab.get("name_ja", ab_key)
-            desc   = ab.get("description_ja", "")
-            w      = QWidget()
-            vl     = QVBoxLayout(w)
-            vl.setContentsMargins(4, 1, 4, 1)
-            vl.setSpacing(0)
-            vl.addWidget(QLabel(f"◆ {name}", styleSheet="font-weight:bold; font-size:11px;"))
+            ab   = ab_data.get(ab_key, {})
+            name = ab.get("name_ja", ab_key)
+            desc = ab.get("description_ja", "")
+            w    = QWidget()
+            vl   = QVBoxLayout(w)
+            vl.setContentsMargins(2, 2, 2, 2)
+            vl.setSpacing(1)
+            vl.addWidget(QLabel(f"◆ {name}",
+                                styleSheet="font-weight:bold; font-size:11px;"))
             if desc:
                 dl = QLabel(desc)
                 dl.setWordWrap(True)
                 dl.setStyleSheet("color:#555; font-size:10px;")
                 vl.addWidget(dl)
-            self._vbox.addWidget(w)
-            self._rows.append(w)
+            self._add(w)
 
 
 class UsageRateWidget(QGroupBox):
