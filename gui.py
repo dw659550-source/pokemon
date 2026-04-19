@@ -35,6 +35,12 @@ try:
 except Exception:
     HAS_CAPTURE = False
 
+try:
+    from capture.battle_monitor import BattleMonitor, load_battle_config
+    HAS_BATTLE_MONITOR = True
+except Exception:
+    HAS_BATTLE_MONITOR = False
+
 from calculator import DamageCalculator
 from calculator.models import PokemonBuild, BattleState
 from calculator.stats import calculate_all_stats, get_types, get_pokemon_data
@@ -620,6 +626,97 @@ class BattleStatePanel(QGroupBox):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# 対戦中リアルタイム監視ウィジェット
+# ─────────────────────────────────────────────────────────────────────────────
+
+class BattleMonitorWidget(QGroupBox):
+    """対戦画面を常時監視し、相手ポケモン名を自動検出するパネル"""
+    opponent_detected = pyqtSignal(str, str)  # (key, name_ja)
+
+    def __init__(self, parent=None):
+        super().__init__("対戦中 — 相手ポケモン自動検出（リアルタイム）", parent)
+        self._monitor: "BattleMonitor | None" = None
+
+        layout = QHBoxLayout(self)
+        layout.setSpacing(8)
+
+        layout.addWidget(QLabel("モニター:"))
+        self.monitor_spin = QSpinBox()
+        self.monitor_spin.setRange(1, 8)
+        self.monitor_spin.setValue(1)
+        self.monitor_spin.setFixedWidth(48)
+        self.monitor_spin.setToolTip("キャプチャカードのモニター番号 (1=プライマリ, 2=セカンダリ...)")
+        layout.addWidget(self.monitor_spin)
+
+        self.toggle_btn = QPushButton("監視開始")
+        self.toggle_btn.setCheckable(True)
+        self.toggle_btn.setStyleSheet(
+            "QPushButton { background:#27ae60; color:white; padding:4px 14px; border-radius:4px; }"
+            "QPushButton:checked { background:#c0392b; }"
+        )
+        self.toggle_btn.toggled.connect(self._on_toggle)
+        layout.addWidget(self.toggle_btn)
+
+        self.status_lbl = QLabel("停止中")
+        self.status_lbl.setStyleSheet("color:#888; font-size:11px;")
+        self.status_lbl.setMinimumWidth(320)
+        layout.addWidget(self.status_lbl)
+
+        hint = QLabel("位置調整: python scripts/calibrate_battle.py <スクショ>")
+        hint.setStyleSheet("color:#aaa; font-size:10px;")
+        layout.addWidget(hint)
+
+        layout.addStretch()
+
+        if not HAS_BATTLE_MONITOR:
+            self.toggle_btn.setEnabled(False)
+            self.status_lbl.setText("⚠ pip install mss easyocr が必要です")
+            self.status_lbl.setStyleSheet("color:#c0392b; font-size:11px;")
+
+    def _on_toggle(self, checked: bool):
+        if checked:
+            self._start()
+        else:
+            self._stop()
+
+    def _start(self):
+        cfg = load_battle_config()
+        cfg["monitor"] = self.monitor_spin.value()
+        self._monitor = BattleMonitor(config=cfg)
+        self._monitor.opponent_changed.connect(self._on_detected)
+        self._monitor.status_changed.connect(self._on_status)
+        self._monitor.start()
+        self.toggle_btn.setText("監視停止")
+        self.monitor_spin.setEnabled(False)
+        self.status_lbl.setText("起動中...")
+        self.status_lbl.setStyleSheet("color:#2980b9; font-size:11px;")
+
+    def _stop(self):
+        if self._monitor:
+            self._monitor.stop()
+            self._monitor.wait(2000)
+            self._monitor = None
+        self.toggle_btn.setText("監視開始")
+        self.status_lbl.setText("停止中")
+        self.status_lbl.setStyleSheet("color:#888; font-size:11px;")
+        self.monitor_spin.setEnabled(True)
+
+    @pyqtSlot(str, str)
+    def _on_detected(self, key: str, name_ja: str):
+        self.opponent_detected.emit(key, name_ja)
+
+    @pyqtSlot(str)
+    def _on_status(self, msg: str):
+        self.status_lbl.setText(msg)
+        if "検出:" in msg:
+            self.status_lbl.setStyleSheet("color:#27ae60; font-weight:bold; font-size:11px;")
+        elif "失敗" in msg or "エラー" in msg or "見つかりません" in msg:
+            self.status_lbl.setStyleSheet("color:#c0392b; font-size:11px;")
+        else:
+            self.status_lbl.setStyleSheet("color:#2980b9; font-size:11px;")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Phase 2 キャプチャパネル
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -850,6 +947,11 @@ class MainWindow(QMainWindow):
         )
         vbox.addWidget(title)
 
+        # 対戦中リアルタイム監視パネル
+        self.battle_monitor_widget = BattleMonitorWidget()
+        self.battle_monitor_widget.opponent_detected.connect(self._on_battle_detected)
+        vbox.addWidget(self.battle_monitor_widget)
+
         # Phase 2 キャプチャパネル
         self.capture_panel = CapturePanel()
         self.capture_panel.pokemon_detected.connect(self._on_pokemon_detected)
@@ -932,6 +1034,14 @@ class MainWindow(QMainWindow):
         """相手ポケモン変更時 → 使用率を自動取得"""
         key = self.def_panel.pokemon_cb.current_key()
         if key and HAS_SCRAPER:
+            self.usage_widget.fetch(key)
+
+    @pyqtSlot(str, str)
+    def _on_battle_detected(self, key: str, name_ja: str):
+        """対戦監視による自動検出 → 相手パネルと使用率を更新"""
+        self.def_panel.pokemon_cb.set_key(key)
+        self.statusBar().showMessage(f"自動検出: {name_ja} を相手に設定しました")
+        if HAS_SCRAPER:
             self.usage_widget.fetch(key)
 
     @pyqtSlot(str)
