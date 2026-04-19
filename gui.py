@@ -12,7 +12,7 @@ from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QGridLayout, QGroupBox, QLabel, QComboBox, QSpinBox, QLineEdit,
     QCheckBox, QTableWidget, QTableWidgetItem, QHeaderView, QScrollArea,
-    QPushButton, QSizePolicy,
+    QPushButton, QSizePolicy, QFrame,
 )
 from PyQt6.QtCore import Qt, QTimer, QThread, pyqtSignal, pyqtSlot
 from PyQt6.QtGui import QColor, QFont
@@ -55,6 +55,39 @@ with open(_DATA / "natures.json", encoding="utf-8") as f:
     _NATURES: dict = json.load(f)
 with open(_DATA / "items.json", encoding="utf-8") as f:
     _ITEMS: dict = json.load(f)
+with open(_DATA / "type_chart.json", encoding="utf-8") as f:
+    _TYPE_CHART: dict = json.load(f)
+
+_ABILITIES: dict = {}
+def _load_abilities() -> dict:
+    global _ABILITIES
+    if not _ABILITIES:
+        p = _DATA / "abilities.json"
+        if p.exists():
+            try:
+                with open(p, encoding="utf-8") as f:
+                    _ABILITIES = json.load(f)
+            except Exception:
+                pass
+    return _ABILITIES
+
+_ALL_TYPES = [
+    "normal","fire","water","electric","grass","ice","fighting","poison",
+    "ground","flying","psychic","bug","rock","ghost","dragon","dark","steel","fairy",
+]
+
+def compute_type_matchup(def_types: list[str]) -> dict[str, list[str]]:
+    result: dict[str, list[str]] = {"x4": [], "x2": [], "x0.5": [], "x0.25": [], "x0": []}
+    for atk in _ALL_TYPES:
+        eff = 1.0
+        for d in def_types:
+            eff *= _TYPE_CHART.get(atk, {}).get(d, 1.0)
+        if   eff >= 4.0: result["x4"].append(atk)
+        elif eff >= 2.0: result["x2"].append(atk)
+        elif eff == 0.0: result["x0"].append(atk)
+        elif eff <= 0.25: result["x0.25"].append(atk)
+        elif eff <= 0.5:  result["x0.5"].append(atk)
+    return result
 
 CALC = DamageCalculator()
 
@@ -243,6 +276,91 @@ class OpponentTeamWidget(QGroupBox):
             btn.clicked.connect(lambda checked, k=key: self.pokemon_selected.emit(k))
             self._btn_row.addWidget(btn)
             self._buttons.append(btn)
+
+
+class PokemonTypeInfoWidget(QGroupBox):
+    """相手ポケモンのタイプ相性・特性を表示するパネル"""
+
+    _ROW_LABELS = [
+        ("x4",    "弱点×4", "#c0392b"),
+        ("x2",    "弱点×2", "#e67e22"),
+        ("x0.5",  "耐性×½", "#2980b9"),
+        ("x0.25", "耐性×¼", "#1a5276"),
+        ("x0",    "無　効",  "#7f8c8d"),
+    ]
+
+    def __init__(self, parent=None):
+        super().__init__("相手ポケモン情報（タイプ相性・特性）", parent)
+        self._vbox = QVBoxLayout(self)
+        self._vbox.setSpacing(3)
+        self._rows: list[QWidget] = []
+        self._hint = QLabel("ポケモンを選ぶと弱点・耐性・特性が表示されます")
+        self._hint.setStyleSheet("color:#888; font-size:11px;")
+        self._vbox.addWidget(self._hint)
+
+    def refresh(self, pokemon_key: str):
+        for w in self._rows:
+            self._vbox.removeWidget(w)
+            w.deleteLater()
+        self._rows.clear()
+
+        pd = _POKEMON.get(pokemon_key, {})
+        if not pd:
+            return
+        self._hint.setText("")
+
+        def_types = pd.get("types", [])
+        matchup   = compute_type_matchup(def_types)
+
+        # ── タイプ相性行 ──
+        for key, label, color in self._ROW_LABELS:
+            types = matchup[key]
+            if not types:
+                continue
+            row = QWidget()
+            hl  = QHBoxLayout(row)
+            hl.setContentsMargins(2, 0, 2, 0)
+            hl.setSpacing(4)
+            lbl = QLabel(f"{label}:")
+            lbl.setFixedWidth(62)
+            lbl.setStyleSheet(f"font-size:11px; font-weight:bold; color:{color};")
+            hl.addWidget(lbl)
+            for t in types:
+                badge = QLabel(TYPE_JA.get(t, t))
+                badge.setStyleSheet(
+                    f"background:{TYPE_COLOR.get(t,'#888')}; color:white;"
+                    f" padding:1px 6px; border-radius:3px; font-size:11px;"
+                )
+                hl.addWidget(badge)
+            hl.addStretch()
+            self._vbox.addWidget(row)
+            self._rows.append(row)
+
+        # ── 区切り線 ──
+        sep = QFrame()
+        sep.setFrameShape(QFrame.Shape.HLine)
+        sep.setStyleSheet("color:#ddd; margin:2px 0;")
+        self._vbox.addWidget(sep)
+        self._rows.append(sep)
+
+        # ── 特性 ──
+        ab_data = _load_abilities()
+        for ab_key in pd.get("abilities", []):
+            ab     = ab_data.get(ab_key, {})
+            name   = ab.get("name_ja", ab_key)
+            desc   = ab.get("description_ja", "")
+            w      = QWidget()
+            vl     = QVBoxLayout(w)
+            vl.setContentsMargins(4, 1, 4, 1)
+            vl.setSpacing(0)
+            vl.addWidget(QLabel(f"◆ {name}", styleSheet="font-weight:bold; font-size:11px;"))
+            if desc:
+                dl = QLabel(desc)
+                dl.setWordWrap(True)
+                dl.setStyleSheet("color:#555; font-size:10px;")
+                vl.addWidget(dl)
+            self._vbox.addWidget(w)
+            self._rows.append(w)
 
 
 class UsageRateWidget(QGroupBox):
@@ -953,7 +1071,7 @@ class MainWindow(QMainWindow):
         self.atk_panel.changed.connect(self._timer.start)
         self.def_panel.changed.connect(self._timer.start)
         self.state_panel.changed.connect(self._timer.start)
-        # 相手ポケモン変更 → 使用率取得
+        # 相手ポケモン変更 → 情報パネル + 使用率取得
         self.def_panel.pokemon_cb.currentIndexChanged.connect(self._on_def_pokemon_changed)
         QTimer.singleShot(400, self._calculate)
 
@@ -1023,6 +1141,10 @@ class MainWindow(QMainWindow):
         def_lay.addWidget(self.def_table)
         def_col.addWidget(def_grp)
 
+        self.info_widget = PokemonTypeInfoWidget()
+        self.info_widget.setMaximumHeight(240)
+        def_col.addWidget(self.info_widget)
+
         self.usage_widget = UsageRateWidget()
         self.usage_widget.setMaximumHeight(200)
         def_col.addWidget(self.usage_widget)
@@ -1057,15 +1179,18 @@ class MainWindow(QMainWindow):
             self.statusBar().showMessage(f"エラー: {e}")
 
     def _on_def_pokemon_changed(self):
-        """相手ポケモン変更時 → 使用率を自動取得"""
+        """相手ポケモン変更時 → 情報パネル更新 + 使用率取得"""
         key = self.def_panel.pokemon_cb.current_key()
+        if key:
+            self.info_widget.refresh(key)
         if key and HAS_SCRAPER:
             self.usage_widget.fetch(key)
 
     @pyqtSlot(str, str)
     def _on_battle_detected(self, key: str, name_ja: str):
-        """対戦監視による自動検出 → 相手パネルと使用率を更新"""
+        """対戦監視による自動検出 → 相手パネル・情報パネル・使用率を更新"""
         self.def_panel.pokemon_cb.set_key(key)
+        self.info_widget.refresh(key)
         self.statusBar().showMessage(f"自動検出: {name_ja} を相手に設定しました")
         if HAS_SCRAPER:
             self.usage_widget.fetch(key)
