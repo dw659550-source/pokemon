@@ -435,7 +435,8 @@ class UsageRateWidget(QGroupBox):
         items    = data.get("items", [])
 
         if not moves and not items:
-            self._status.setText("データが見つかりませんでした（サイト構造が変わった可能性）")
+            self._status.setText("このポケモンの使用率データはありません")
+            self._status.setStyleSheet("color:#aaa; font-size:11px;")
             return
 
         self._status.setText("")

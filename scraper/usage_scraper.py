@@ -5,6 +5,7 @@ import json
 import re
 import logging
 import time
+import urllib.parse
 from pathlib import Path
 
 try:
@@ -223,19 +224,46 @@ def _parse_all_tables(soup, result: dict):
         result["moves"] = ranked_items[:10]
 
 
+def _pokemon_name_ja(pokemon_key: str) -> str:
+    """pokemon.json から日本語名を返す（なければキーをそのまま）"""
+    try:
+        with open(_POKEMON_PATH, encoding="utf-8") as f:
+            data = json.load(f)
+        return data.get(pokemon_key, {}).get("name_ja", pokemon_key)
+    except Exception:
+        return pokemon_key
+
+
 def fetch_usage_data(pokemon_key: str) -> dict:
-    """pokechamdb.com から使用率データをフェッチしてパース"""
+    """pokechamdb.com から使用率データをフェッチしてパース。
+    英語キー → 404 なら日本語名で再試行。"""
     if not HAS_DEPS:
-        raise RuntimeError("requests と beautifulsoup4 が必要です: pip install requests beautifulsoup4")
+        raise RuntimeError("requests と beautifulsoup4 が必要です")
 
-    url = BASE_URL.format(name=pokemon_key)
-    logger.info("Fetching: %s", url)
+    candidates = [
+        pokemon_key,
+        urllib.parse.quote(_pokemon_name_ja(pokemon_key)),
+    ]
 
-    resp = requests.get(url, timeout=15, headers=HEADERS)
-    resp.raise_for_status()
-    resp.encoding = resp.apparent_encoding or "utf-8"
+    for name in candidates:
+        url = BASE_URL.format(name=name)
+        logger.info("Fetching: %s", url)
+        try:
+            resp = requests.get(url, timeout=15, headers=HEADERS)
+            if resp.status_code == 404:
+                logger.debug("404 for %s, trying next", name)
+                continue
+            resp.raise_for_status()
+            resp.encoding = resp.apparent_encoding or "utf-8"
+            return _parse_page(resp.text)
+        except Exception as e:
+            if "404" in str(e):
+                continue
+            raise
 
-    return _parse_page(resp.text)
+    # 全候補が 404 → このポケモンはサイト未登録
+    logger.info("使用率データなし（未登録）: %s", pokemon_key)
+    return {"moves": [], "items": [], "partners": []}
 
 
 def get_usage_data(pokemon_key: str, force_refresh: bool = False) -> dict | None:
@@ -258,7 +286,7 @@ def get_usage_data(pokemon_key: str, force_refresh: bool = False) -> dict | None
         _save_cache(cache)
         return data
     except Exception as e:
-        logger.error("fetch_usage_data(%s) failed: %s", pokemon_key, e)
+        logger.info("使用率取得失敗 %s: %s", pokemon_key, e)
         return None
 
 
