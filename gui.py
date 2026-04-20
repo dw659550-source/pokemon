@@ -610,8 +610,9 @@ class StatsDisplay(QWidget):
 class PokemonPanel(QGroupBox):
     changed = pyqtSignal()
 
-    def __init__(self, title: str, parent=None):
+    def __init__(self, title: str, filter_by_learnset: bool = True, parent=None):
         super().__init__(title, parent)
+        self._filter_by_learnset = filter_by_learnset
         self._build_ui()
         self._connect()
         QTimer.singleShot(0, self._on_pokemon_changed)
@@ -743,7 +744,7 @@ class PokemonPanel(QGroupBox):
         if abilities:
             self.ability_edit.setPlaceholderText(abilities[0])
         # 覚え技で技ドロップダウンを絞り込む
-        move_list = _get_learnable_moves(key)
+        move_list = _get_learnable_moves(key) if self._filter_by_learnset else DAMAGE_MOVE_LIST
         for cb in self.move_cbs:
             cb.update_items(move_list)
         self._fire()
@@ -1196,8 +1197,8 @@ class MainWindow(QMainWindow):
 
         panels = QHBoxLayout()
         panels.setSpacing(6)
-        self.atk_panel = PokemonPanel("⚔   自分のポケモン")
-        self.def_panel = PokemonPanel("🛡   相手のポケモン")
+        self.atk_panel = PokemonPanel("⚔   自分のポケモン", filter_by_learnset=True)
+        self.def_panel = PokemonPanel("🛡   相手のポケモン", filter_by_learnset=False)
         for panel in (self.atk_panel, self.def_panel):
             scroll = QScrollArea()
             scroll.setWidget(panel)
