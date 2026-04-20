@@ -1198,7 +1198,7 @@ class MainWindow(QMainWindow):
         panels = QHBoxLayout()
         panels.setSpacing(6)
         self.atk_panel = PokemonPanel("⚔   自分のポケモン", filter_by_learnset=True)
-        self.def_panel = PokemonPanel("🛡   相手のポケモン", filter_by_learnset=False)
+        self.def_panel = PokemonPanel("🛡   相手のポケモン", filter_by_learnset=True)
         for panel in (self.atk_panel, self.def_panel):
             scroll = QScrollArea()
             scroll.setWidget(panel)
@@ -1339,6 +1339,23 @@ class MainWindow(QMainWindow):
                 atk_keys.append(key)
             if len(atk_keys) >= 4:
                 break
+
+        if not atk_keys:
+            return
+
+        # 覚え技リストに使用率技が含まれていない場合は追加してドロップダウンを更新
+        # （PokeAPIのSV覚え技データが不完全なことがあるため）
+        base_list = _get_learnable_moves(pokemon_key)
+        base_keys = {k for k, _ in base_list}
+        extra = [
+            (k, _MOVES[k]["name_ja"]) for k in atk_keys
+            if k not in base_keys and k in _MOVES and "name_ja" in _MOVES[k]
+        ]
+        if extra:
+            merged = [base_list[0]] + sorted(base_list[1:] + extra, key=lambda x: x[1])
+            for cb in self.def_panel.move_cbs:
+                cb.update_items(merged)
+
         for i, cb in enumerate(self.def_panel.move_cbs):
             if i < len(atk_keys):
                 cb.set_key(atk_keys[i])
