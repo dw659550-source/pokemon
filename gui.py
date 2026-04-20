@@ -203,6 +203,29 @@ ITEM_LIST = sorted(
     key=lambda x: x[1],
 )
 
+# ポケモンごとの覚え技マップ（遅延ロード）
+_POKEMON_MOVES: dict[str, list[str]] = {}
+_POKEMON_MOVES_PATH = _DATA / "pokemon_moves.json"
+
+def _get_learnable_moves(pokemon_key: str) -> list[tuple]:
+    """ポケモンが覚えられるダメージ技リストを返す。データなければ全技。"""
+    global _POKEMON_MOVES
+    if not _POKEMON_MOVES and _POKEMON_MOVES_PATH.exists():
+        try:
+            with open(_POKEMON_MOVES_PATH, encoding="utf-8") as f:
+                _POKEMON_MOVES = json.load(f)
+        except Exception:
+            pass
+    if not pokemon_key or not _POKEMON_MOVES:
+        return DAMAGE_MOVE_LIST
+    learnable = set(_POKEMON_MOVES.get(pokemon_key, []))
+    if not learnable:
+        return DAMAGE_MOVE_LIST
+    return [("", "（なし）")] + sorted(
+        [(k, v) for k, v in DAMAGE_MOVE_LIST[1:] if k in learnable],
+        key=lambda x: x[1],
+    )
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 共通ウィジェット
@@ -230,6 +253,20 @@ class SearchableComboBox(QComboBox):
             if self.itemData(i) == key:
                 self.setCurrentIndex(i)
                 return
+
+    def update_items(self, items: list[tuple]):
+        """アイテムを入れ替え、以前の選択を可能な限り維持する"""
+        prev_key = self.current_key()
+        self.blockSignals(True)
+        self.clear()
+        for key, name in items:
+            self.addItem(name, userData=key)
+        completer = QCompleter([name for _, name in items], self)
+        completer.setFilterMode(Qt.MatchFlag.MatchContains)
+        completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+        self.setCompleter(completer)
+        self.set_key(prev_key)  # 覚えない技なら index 0（なし）に戻る
+        self.blockSignals(False)
 
 
 class OpponentTeamWidget(QGroupBox):
@@ -698,6 +735,10 @@ class PokemonPanel(QGroupBox):
         abilities = pd.get("abilities", [])
         if abilities:
             self.ability_edit.setPlaceholderText(abilities[0])
+        # 覚え技で技ドロップダウンを絞り込む
+        move_list = _get_learnable_moves(key)
+        for cb in self.move_cbs:
+            cb.update_items(move_list)
         self._fire()
 
     def _fire(self):
