@@ -31,7 +31,9 @@ def main():
     done = skip = fail = 0
     for i, ab in enumerate(all_abilities, 1):
         key = ab["name"]
-        if key in existing:
+        # 説明が空のエントリは再取得する
+        entry = existing.get(key)
+        if entry and (entry.get("description_ja") or entry.get("description_en")):
             skip += 1
             continue
         try:
@@ -48,7 +50,15 @@ def main():
                 if fe["language"]["name"] == "ja":
                     desc_ja = fe["flavor_text"].replace("\n", " ").replace("\u00ad", "")
                     break
-            existing[key] = {"name_ja": name_ja, "description_ja": desc_ja}
+            # 英語説明（日本語がない場合のフォールバック）
+            desc_en = ""
+            if not desc_ja:
+                for fe in reversed(data.get("flavor_text_entries", [])):
+                    if fe["language"]["name"] == "en":
+                        desc_en = fe["flavor_text"].replace("\n", " ")
+                        break
+            existing[key] = {"name_ja": name_ja, "description_ja": desc_ja,
+                             "description_en": desc_en}
             done += 1
         except Exception as e:
             print(f"  {key}: 失敗 ({e})")

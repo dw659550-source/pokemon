@@ -372,7 +372,7 @@ class PokemonTypeInfoWidget(QGroupBox):
         for ab_key in pd.get("abilities", []):
             ab   = ab_data.get(ab_key, {})
             name = ab.get("name_ja", ab_key)
-            desc = ab.get("description_ja", "")
+            desc = ab.get("description_ja") or ab.get("description_en", "")
             w    = QWidget()
             vl   = QVBoxLayout(w)
             vl.setContentsMargins(2, 2, 2, 2)
@@ -400,9 +400,18 @@ class UsageRateWidget(QGroupBox):
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(2)
         self._layout.setContentsMargins(6, 6, 6, 6)
+
+        hdr = QHBoxLayout()
         self._status = QLabel("ポケモンを選ぶと自動取得します")
         self._status.setStyleSheet("color: #888; font-size: 11px;")
-        self._layout.addWidget(self._status)
+        hdr.addWidget(self._status, 1)
+        self._refresh_btn = QPushButton("更新")
+        self._refresh_btn.setFixedSize(40, 20)
+        self._refresh_btn.setStyleSheet("font-size:10px; padding:0;")
+        self._refresh_btn.clicked.connect(self._on_refresh)
+        hdr.addWidget(self._refresh_btn)
+        self._layout.addLayout(hdr)
+
         self._widgets: list[QWidget] = []
         self._worker: UsageFetcher | None = None
         self._current_key = ""
@@ -424,6 +433,10 @@ class UsageRateWidget(QGroupBox):
         self._worker.finished.connect(self._on_data)
         self._worker.failed.connect(self._on_fail)
         self._worker.start()
+
+    def _on_refresh(self):
+        if self._current_key:
+            self.fetch(self._current_key, force=True)
 
     def _clear_widgets(self):
         for w in self._widgets:
@@ -482,29 +495,32 @@ class UsageRateWidget(QGroupBox):
 
 
 class EVWidget(QWidget):
-    """EV 6ステータス入力（3列×2行）"""
+    """EV 6ステータス入力（H/A/B/C/D/S 横一列）"""
     changed = pyqtSignal()
 
-    _STATS = [("HP", "hp"), ("こうげき", "attack"), ("ぼうぎょ", "defense"),
-              ("とくこう", "sp_attack"), ("とくぼう", "sp_defense"), ("すばやさ", "speed")]
+    _STATS = [("H","hp"), ("A","attack"), ("B","defense"),
+              ("C","sp_attack"), ("D","sp_defense"), ("S","speed")]
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        layout = QGridLayout(self)
+        layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(3)
+        layout.setSpacing(4)
         self._spins: dict[str, QSpinBox] = {}
-        for i, (label, key) in enumerate(self._STATS):
-            row, col = divmod(i, 3)
+        for label, key in self._STATS:
+            col = QVBoxLayout()
+            col.setSpacing(1)
+            col.setContentsMargins(0, 0, 0, 0)
             lbl = QLabel(label)
             lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            lbl.setStyleSheet("font-size: 10px; color: #555;")
+            lbl.setStyleSheet("font-size:10px; color:#555;")
             spin = QSpinBox()
             spin.setRange(0, 252)
-            spin.setFixedWidth(58)
+            spin.setFixedWidth(52)
             spin.valueChanged.connect(self.changed.emit)
-            layout.addWidget(lbl,  row * 2,     col)
-            layout.addWidget(spin, row * 2 + 1, col)
+            col.addWidget(lbl)
+            col.addWidget(spin)
+            layout.addLayout(col)
             self._spins[key] = spin
 
     def get_evs(self) -> dict:
@@ -512,27 +528,30 @@ class EVWidget(QWidget):
 
 
 class StatsDisplay(QWidget):
-    """計算済みステータス表示"""
+    """計算済みステータス表示（H/A/B/C/D/S 横一列）"""
 
-    _STATS = [("HP", "hp"), ("こうげき", "attack"), ("ぼうぎょ", "defense"),
-              ("とくこう", "sp_attack"), ("とくぼう", "sp_defense"), ("すばやさ", "speed")]
+    _STATS = [("H","hp"), ("A","attack"), ("B","defense"),
+              ("C","sp_attack"), ("D","sp_defense"), ("S","speed")]
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        layout = QGridLayout(self)
+        layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(2)
+        layout.setSpacing(4)
         self._vals: dict[str, QLabel] = {}
-        for i, (name, key) in enumerate(self._STATS):
-            row, col = divmod(i, 3)
+        for name, key in self._STATS:
+            col = QVBoxLayout()
+            col.setSpacing(1)
+            col.setContentsMargins(0, 0, 0, 0)
             hdr = QLabel(name)
             hdr.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            hdr.setStyleSheet("font-size: 10px; color: #777;")
+            hdr.setStyleSheet("font-size:10px; color:#777;")
             val = QLabel("—")
             val.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            val.setStyleSheet("font-weight: bold; font-size: 13px;")
-            layout.addWidget(hdr, row * 2,     col)
-            layout.addWidget(val, row * 2 + 1, col)
+            val.setStyleSheet("font-weight:bold; font-size:12px;")
+            col.addWidget(hdr)
+            col.addWidget(val)
+            layout.addLayout(col)
             self._vals[key] = val
 
     def update(self, stats: dict):
@@ -555,20 +574,19 @@ class PokemonPanel(QGroupBox):
 
     def _build_ui(self):
         root = QVBoxLayout(self)
-        root.setSpacing(4)
-        root.setContentsMargins(6, 6, 6, 6)
+        root.setSpacing(3)
+        root.setContentsMargins(4, 6, 4, 4)
 
         # ── ポケモン名 + レベル ──
         r = QHBoxLayout()
-        r.addWidget(QLabel("ポケモン"))
+        r.setSpacing(4)
         self.pokemon_cb = SearchableComboBox(POKEMON_LIST)
-        self.pokemon_cb.setMinimumWidth(140)
-        r.addWidget(self.pokemon_cb, 3)
+        r.addWidget(self.pokemon_cb, 1)
         r.addWidget(QLabel("Lv"))
         self.level_spin = QSpinBox()
         self.level_spin.setRange(1, 100)
         self.level_spin.setValue(50)
-        self.level_spin.setFixedWidth(48)
+        self.level_spin.setFixedWidth(44)
         r.addWidget(self.level_spin)
         root.addLayout(r)
 
@@ -580,63 +598,63 @@ class PokemonPanel(QGroupBox):
 
         # ── 性格 + 持ち物 ──
         r2 = QHBoxLayout()
+        r2.setSpacing(4)
         r2.addWidget(QLabel("性格"))
         self.nature_cb = QComboBox()
         for k, v in _NATURES.items():
             if not k.startswith("_"):
                 nd = v
-                boost  = nd["boosted"]  or "なし"
-                reduce = nd["reduced"]  or "なし"
-                self.nature_cb.addItem(
-                    f"{nd['name_ja']}  ↑{boost} ↓{reduce}", userData=k
-                )
-        r2.addWidget(self.nature_cb, 2)
-        r2.addWidget(QLabel("持ち物"))
+                boost  = nd["boosted"] or "-"
+                reduce = nd["reduced"] or "-"
+                self.nature_cb.addItem(f"{nd['name_ja']} ↑{boost} ↓{reduce}", userData=k)
+        r2.addWidget(self.nature_cb, 3)
+        r2.addWidget(QLabel("持物"))
         self.item_cb = SearchableComboBox(ITEM_LIST)
-        self.item_cb.setMinimumWidth(120)
-        r2.addWidget(self.item_cb, 2)
+        r2.addWidget(self.item_cb, 3)
         root.addLayout(r2)
 
         # ── 特性 + メガシンカ ──
         r3 = QHBoxLayout()
+        r3.setSpacing(4)
         r3.addWidget(QLabel("特性"))
         self.ability_edit = QLineEdit()
-        self.ability_edit.setPlaceholderText("例: rough-skin")
+        self.ability_edit.setPlaceholderText("特性キー")
         r3.addWidget(self.ability_edit, 3)
-        self.mega_cb = QCheckBox("メガシンカ")
+        self.mega_cb = QCheckBox("メガ")
         self.mega_cb.setVisible(False)
         r3.addWidget(self.mega_cb)
         root.addLayout(r3)
 
-        # ── 技 4つ ──
+        # ── 技（2列×2行）──
         move_grp = QGroupBox("技")
         mg = QGridLayout(move_grp)
-        mg.setSpacing(4)
+        mg.setSpacing(3)
+        mg.setContentsMargins(4, 4, 4, 4)
         self.move_cbs: list[SearchableComboBox] = []
         for i in range(4):
-            mg.addWidget(QLabel(f"技{i+1}"), i, 0)
+            row, col = divmod(i, 2)
             cb = SearchableComboBox(DAMAGE_MOVE_LIST)
-            mg.addWidget(cb, i, 1)
+            mg.addWidget(cb, row, col)
             self.move_cbs.append(cb)
         root.addWidget(move_grp)
 
         # ── EV ──
-        ev_grp = QGroupBox("努力値 (EV  各0〜252)")
-        ev_layout = QVBoxLayout(ev_grp)
+        ev_grp = QGroupBox("EV")
+        ev_lay = QVBoxLayout(ev_grp)
+        ev_lay.setContentsMargins(4, 4, 4, 4)
         self.ev_widget = EVWidget()
-        ev_layout.addWidget(self.ev_widget)
+        ev_lay.addWidget(self.ev_widget)
         root.addWidget(ev_grp)
 
         # ── IV ──
-        iv_row = QHBoxLayout()
-        self.iv_max_cb = QCheckBox("個体値 全31（変更不要なら ON のまま）")
+        self.iv_max_cb = QCheckBox("個体値 全31")
         self.iv_max_cb.setChecked(True)
-        iv_row.addWidget(self.iv_max_cb)
-        root.addLayout(iv_row)
+        root.addWidget(self.iv_max_cb)
 
         # ── ステータス表示 ──
-        stat_grp = QGroupBox("実数値（自動計算）")
+        stat_grp = QGroupBox("実数値")
         sl = QVBoxLayout(stat_grp)
+        sl.setContentsMargins(4, 4, 4, 4)
         self.stats_disp = StatsDisplay()
         sl.addWidget(self.stats_disp)
         root.addWidget(stat_grp)
