@@ -198,6 +198,11 @@ DAMAGE_MOVE_LIST = [("", "（なし）")] + sorted(
      if not k.startswith("_") and v.get("category") != "status"],
     key=lambda x: x[1],
 )
+# 日本語名 → キー（使用率データの技名を解決するため）
+_MOVE_JA_TO_KEY: dict[str, str] = {
+    v["name_ja"]: k for k, v in _MOVES.items()
+    if not k.startswith("_") and "name_ja" in v
+}
 ITEM_LIST = sorted(
     [(k, v["name_ja"]) for k, v in _ITEMS.items() if not k.startswith("_")],
     key=lambda x: x[1],
@@ -426,6 +431,7 @@ class PokemonTypeInfoWidget(QGroupBox):
 
 class UsageRateWidget(QGroupBox):
     """相手ポケモンの使用率（技・持ち物）を表示するパネル"""
+    data_ready = pyqtSignal(str, dict)   # (pokemon_key, data) — 取得完了時
 
     _BAR_STYLE = (
         "QProgressBar{border:1px solid #ccc;border-radius:3px;font-size:10px;text-align:right;}"
@@ -511,6 +517,7 @@ class UsageRateWidget(QGroupBox):
         if key != self._current_key:
             return
         self._clear_widgets()
+        self.data_ready.emit(key, data)
         moves = data.get("moves", [])
         items = data.get("items", [])
 
@@ -1236,6 +1243,7 @@ class MainWindow(QMainWindow):
         right_layout.addWidget(info_scroll, stretch=2)
 
         self.usage_widget = UsageRateWidget()
+        self.usage_widget.data_ready.connect(self._on_usage_ready)
         right_layout.addWidget(self.usage_widget, stretch=1)
 
         body.addWidget(right_panel)
@@ -1315,6 +1323,24 @@ class MainWindow(QMainWindow):
     def _on_sprites_detected(self, results: list):
         """スプライト検出結果を OpponentTeamWidget に渡す"""
         self.opponent_team_widget.show_team(results)
+
+    @pyqtSlot(str, dict)
+    def _on_usage_ready(self, pokemon_key: str, data: dict):
+        """使用率取得完了 → 相手パネルの技スロットを上位攻撃技で自動セット"""
+        if pokemon_key != self.def_panel.pokemon_cb.current_key():
+            return
+        atk_keys = []
+        for name_ja, _ in data.get("moves", []):
+            key = _MOVE_JA_TO_KEY.get(name_ja)
+            if not key:
+                continue
+            if _MOVES.get(key, {}).get("category") in ("physical", "special"):
+                atk_keys.append(key)
+            if len(atk_keys) >= 4:
+                break
+        for i, cb in enumerate(self.def_panel.move_cbs):
+            if i < len(atk_keys):
+                cb.set_key(atk_keys[i])
 
 
 # ─────────────────────────────────────────────────────────────────────────────
