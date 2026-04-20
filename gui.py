@@ -12,7 +12,7 @@ from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QGridLayout, QGroupBox, QLabel, QComboBox, QSpinBox, QLineEdit,
     QCheckBox, QTableWidget, QTableWidgetItem, QHeaderView, QScrollArea,
-    QPushButton, QSizePolicy, QFrame,
+    QPushButton, QSizePolicy, QFrame, QProgressBar, QTabWidget,
 )
 from PyQt6.QtCore import Qt, QTimer, QThread, pyqtSignal, pyqtSlot
 from PyQt6.QtGui import QColor, QFont
@@ -390,14 +390,20 @@ class PokemonTypeInfoWidget(QGroupBox):
 class UsageRateWidget(QGroupBox):
     """相手ポケモンの使用率（技・持ち物）を表示するパネル"""
 
+    _BAR_STYLE = (
+        "QProgressBar{border:1px solid #ccc;border-radius:3px;font-size:10px;text-align:right;}"
+        "QProgressBar::chunk{background:#5dade2;border-radius:2px;}"
+    )
+
     def __init__(self, parent=None):
         super().__init__("使用率データ（pokechamdb.com）", parent)
         self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(2)
+        self._layout.setContentsMargins(6, 6, 6, 6)
         self._status = QLabel("ポケモンを選ぶと自動取得します")
         self._status.setStyleSheet("color: #888; font-size: 11px;")
         self._layout.addWidget(self._status)
-        self._move_labels: list[QLabel] = []
-        self._item_labels: list[QLabel] = []
+        self._widgets: list[QWidget] = []
         self._worker: UsageFetcher | None = None
         self._current_key = ""
 
@@ -412,27 +418,51 @@ class UsageRateWidget(QGroupBox):
             return
         self._current_key = pokemon_key
         self._status.setText("取得中...")
-        self._clear_labels()
+        self._clear_widgets()
 
         self._worker = UsageFetcher(pokemon_key, force)
         self._worker.finished.connect(self._on_data)
         self._worker.failed.connect(self._on_fail)
         self._worker.start()
 
-    def _clear_labels(self):
-        for lbl in self._move_labels + self._item_labels:
-            self._layout.removeWidget(lbl)
-            lbl.deleteLater()
-        self._move_labels.clear()
-        self._item_labels.clear()
+    def _clear_widgets(self):
+        for w in self._widgets:
+            self._layout.removeWidget(w)
+            w.deleteLater()
+        self._widgets.clear()
+
+    def _add_section(self, label: str, entries: list):
+        hdr = QLabel(label)
+        hdr.setStyleSheet("font-weight:bold; font-size:11px; color:#444; margin-top:4px;")
+        self._layout.addWidget(hdr)
+        self._widgets.append(hdr)
+        for name, pct in entries:
+            row = QWidget()
+            rl = QHBoxLayout(row)
+            rl.setContentsMargins(2, 0, 2, 0)
+            rl.setSpacing(4)
+            name_lbl = QLabel(name)
+            name_lbl.setFixedWidth(110)
+            name_lbl.setStyleSheet("font-size:11px;")
+            rl.addWidget(name_lbl)
+            bar = QProgressBar()
+            bar.setRange(0, 100)
+            bar.setValue(int(pct))
+            bar.setFixedHeight(14)
+            bar.setFormat(f"{pct:.1f}%")
+            bar.setTextVisible(True)
+            bar.setStyleSheet(self._BAR_STYLE)
+            rl.addWidget(bar, stretch=1)
+            self._layout.addWidget(row)
+            self._widgets.append(row)
 
     @pyqtSlot(str, dict)
     def _on_data(self, key: str, data: dict):
         if key != self._current_key:
             return
-        self._clear_labels()
-        moves    = data.get("moves", [])
-        items    = data.get("items", [])
+        self._clear_widgets()
+        moves = data.get("moves", [])
+        items = data.get("items", [])
 
         if not moves and not items:
             self._status.setText("このポケモンの使用率データはありません")
@@ -440,34 +470,10 @@ class UsageRateWidget(QGroupBox):
             return
 
         self._status.setText("")
-
-        # 技
         if moves:
-            hdr = QLabel("技")
-            hdr.setStyleSheet("font-weight: bold; font-size: 11px; color: #444; margin-top:4px;")
-            self._layout.addWidget(hdr)
-            self._move_labels.append(hdr)
-            for name, pct in moves[:5]:
-                bar_len = int(pct / 2)
-                bar = "█" * bar_len
-                lbl = QLabel(f"  {name}  {bar} {pct:.1f}%")
-                lbl.setStyleSheet("font-size: 11px; font-family: monospace;")
-                self._layout.addWidget(lbl)
-                self._move_labels.append(lbl)
-
-        # 持ち物
+            self._add_section("技", moves[:8])
         if items:
-            hdr2 = QLabel("持ち物")
-            hdr2.setStyleSheet("font-weight: bold; font-size: 11px; color: #444; margin-top:4px;")
-            self._layout.addWidget(hdr2)
-            self._item_labels.append(hdr2)
-            for name, pct in items[:5]:
-                bar_len = int(pct / 2)
-                bar = "█" * bar_len
-                lbl = QLabel(f"  {name}  {bar} {pct:.1f}%")
-                lbl.setStyleSheet("font-size: 11px; font-family: monospace;")
-                self._layout.addWidget(lbl)
-                self._item_labels.append(lbl)
+            self._add_section("持ち物", items[:5])
 
     @pyqtSlot(str, str)
     def _on_fail(self, key: str, msg: str):
@@ -1105,26 +1111,18 @@ class MainWindow(QMainWindow):
         root = QWidget()
         self.setCentralWidget(root)
         outer = QVBoxLayout(root)
-        outer.setSpacing(4)
+        outer.setSpacing(0)
         outer.setContentsMargins(6, 6, 6, 6)
 
-        # ── 監視パネル群（全幅）──
-        self.battle_monitor_widget = BattleMonitorWidget()
-        self.battle_monitor_widget.opponent_detected.connect(self._on_battle_detected)
-        outer.addWidget(self.battle_monitor_widget)
+        self._tabs = QTabWidget()
+        outer.addWidget(self._tabs)
 
-        self.capture_panel = CapturePanel()
-        self.capture_panel.pokemon_detected.connect(self._on_pokemon_detected)
-        self.capture_panel.sprites_detected.connect(self._on_sprites_detected)
-        outer.addWidget(self.capture_panel)
-
-        self.opponent_team_widget = OpponentTeamWidget()
-        self.opponent_team_widget.pokemon_selected.connect(self._on_pokemon_detected)
-        outer.addWidget(self.opponent_team_widget)
-
-        # ── メインコンテンツ + 右サイドバー ──
-        body = QHBoxLayout()
+        # ── Tab 1: ダメージ計算 ──
+        calc_widget = QWidget()
+        self._tabs.addTab(calc_widget, "ダメージ計算")
+        body = QHBoxLayout(calc_widget)
         body.setSpacing(8)
+        body.setContentsMargins(0, 4, 0, 0)
 
         # 左：ポケモンパネル・状態・ダメージテーブル
         left = QVBoxLayout()
@@ -1153,33 +1151,56 @@ class MainWindow(QMainWindow):
         self.atk_table = ResultTable()
         atk_lay.addWidget(self.atk_table)
 
-        def_col = QVBoxLayout()
         def_grp = QGroupBox("🛡   相手 → 自分（受けるダメージ）")
         def_lay = QVBoxLayout(def_grp)
         self.def_table = ResultTable()
         def_lay.addWidget(self.def_table)
-        def_col.addWidget(def_grp)
-
-        self.usage_widget = UsageRateWidget()
-        self.usage_widget.setMaximumHeight(200)
-        def_col.addWidget(self.usage_widget)
 
         result_row.addWidget(atk_grp)
-        result_row.addLayout(def_col)
+        result_row.addWidget(def_grp)
         left.addLayout(result_row, stretch=2)
 
         body.addLayout(left, stretch=1)
 
-        # 右サイドバー：タイプ相性・特性
+        # 右サイドバー：タイプ相性・特性 + 使用率
+        right_panel = QWidget()
+        right_panel.setFixedWidth(400)
+        right_layout = QVBoxLayout(right_panel)
+        right_layout.setSpacing(4)
+        right_layout.setContentsMargins(0, 0, 0, 0)
+
         self.info_widget = PokemonTypeInfoWidget()
         info_scroll = QScrollArea()
         info_scroll.setWidget(self.info_widget)
         info_scroll.setWidgetResizable(True)
-        info_scroll.setFixedWidth(400)
         info_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        body.addWidget(info_scroll)
+        right_layout.addWidget(info_scroll, stretch=2)
 
-        outer.addLayout(body, stretch=1)
+        self.usage_widget = UsageRateWidget()
+        right_layout.addWidget(self.usage_widget, stretch=1)
+
+        body.addWidget(right_panel)
+
+        # ── Tab 2: 自動検出 ──
+        capture_widget = QWidget()
+        self._tabs.addTab(capture_widget, "自動検出")
+        cap_layout = QVBoxLayout(capture_widget)
+        cap_layout.setSpacing(8)
+        cap_layout.setContentsMargins(0, 4, 0, 0)
+
+        self.battle_monitor_widget = BattleMonitorWidget()
+        self.battle_monitor_widget.opponent_detected.connect(self._on_battle_detected)
+        cap_layout.addWidget(self.battle_monitor_widget)
+
+        self.capture_panel = CapturePanel()
+        self.capture_panel.pokemon_detected.connect(self._on_pokemon_detected)
+        self.capture_panel.sprites_detected.connect(self._on_sprites_detected)
+        cap_layout.addWidget(self.capture_panel)
+
+        self.opponent_team_widget = OpponentTeamWidget()
+        self.opponent_team_widget.pokemon_selected.connect(self._on_pokemon_detected)
+        cap_layout.addWidget(self.opponent_team_widget)
+        cap_layout.addStretch()
 
         self.statusBar().showMessage("準備完了  —  ポケモンと技を選ぶと自動計算されます")
 
