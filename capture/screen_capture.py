@@ -146,8 +146,10 @@ def capture_window_direct(title: str):
         bmp.CreateCompatibleBitmap(mfc_dc, w, h)
         save_dc.SelectObject(bmp)
 
+        # win32gui.PrintWindow は pywin32 のバージョンによっては未定義のため ctypes で呼ぶ
+        import ctypes
         PW_RENDERFULLCONTENT = 0x00000002
-        win32gui.PrintWindow(hwnd, save_dc.GetSafeHdc(), PW_RENDERFULLCONTENT)
+        ctypes.windll.user32.PrintWindow(hwnd, save_dc.GetSafeHdc(), PW_RENDERFULLCONTENT)
 
         info   = bmp.GetInfo()
         raw    = bmp.GetBitmapBits(True)
