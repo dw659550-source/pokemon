@@ -150,22 +150,44 @@ class BattleMonitor(QThread):
     """
     対戦画面を ~15fps でキャプチャし、相手HPバー名前領域を監視する。
     ポケモンが変わったと判断したら opponent_changed を emit する。
+    window_title が設定されている場合はそのウィンドウだけをキャプチャする。
     """
     opponent_changed = pyqtSignal(str, str)  # (key, name_ja)
     status_changed   = pyqtSignal(str)
 
-    def __init__(self, config: dict | None = None):
+    def __init__(self, config: dict | None = None, window_title: str = ""):
         super().__init__()
-        self._cfg     = config or load_battle_config()
-        self._running = False
+        self._cfg          = config or load_battle_config()
+        self._window_title = window_title
+        self._running      = False
         self._prev_mean: np.ndarray | None = None
-        self._prev_name = ""
+        self._prev_name    = ""
 
     def update_config(self, cfg: dict):
         self._cfg = cfg
 
     def stop(self):
         self._running = False
+
+    def _grab_frame(self, sct, mon):
+        """ウィンドウ or モニターをキャプチャして BGR numpy array を返す。失敗時は None。"""
+        if self._window_title:
+            try:
+                import pygetwindow as gw
+                wins = gw.getWindowsWithTitle(self._window_title)
+                if not wins:
+                    return None
+                w = wins[0]
+                if w.width <= 0 or w.height <= 0:
+                    return None
+                region = {"left": w.left, "top": w.top,
+                          "width": w.width, "height": w.height}
+                shot = sct.grab(region)
+            except Exception:
+                return None
+        else:
+            shot = sct.grab(mon)
+        return np.array(shot)[:, :, :3]
 
     def run(self):
         try:
@@ -190,19 +212,17 @@ class BattleMonitor(QThread):
         self._running = True
 
         with mss.mss() as sct:
-            monitors = sct.monitors  # 0=全体, 1=プライマリ, 2=セカンダリ
+            monitors = sct.monitors
             mon_idx  = int(self._cfg.get("monitor", 1))
-            if mon_idx >= len(monitors):
-                self.status_changed.emit(
-                    f"モニター{mon_idx}が見つかりません（利用可能: 1〜{len(monitors)-1}）"
-                )
-                return
-            mon = monitors[mon_idx]
+            mon      = monitors[mon_idx] if mon_idx < len(monitors) else monitors[1]
 
             while self._running:
                 try:
-                    shot  = sct.grab(mon)
-                    frame = np.array(shot)[:, :, :3]  # BGRA → BGR
+                    frame = self._grab_frame(sct, mon)
+                    if frame is None:
+                        time.sleep(0.3)
+                        continue
+                    h, w  = frame.shape[:2]
                     h, w  = frame.shape[:2]
                     cfg   = self._cfg
 

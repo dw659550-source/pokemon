@@ -879,17 +879,20 @@ class BattleMonitorWidget(QGroupBox):
     def __init__(self, parent=None):
         super().__init__("対戦中 — 相手ポケモン自動検出（リアルタイム）", parent)
         self._monitor: "BattleMonitor | None" = None
+        self._windows: list = []
 
         layout = QHBoxLayout(self)
         layout.setSpacing(8)
 
-        layout.addWidget(QLabel("モニター:"))
-        self.monitor_spin = QSpinBox()
-        self.monitor_spin.setRange(1, 8)
-        self.monitor_spin.setValue(1)
-        self.monitor_spin.setFixedWidth(48)
-        self.monitor_spin.setToolTip("キャプチャカードのモニター番号 (1=プライマリ, 2=セカンダリ...)")
-        layout.addWidget(self.monitor_spin)
+        layout.addWidget(QLabel("キャプチャ対象:"))
+        self.win_cb = QComboBox()
+        self.win_cb.setMinimumWidth(220)
+        layout.addWidget(self.win_cb)
+
+        self.refresh_btn = QPushButton("更新")
+        self.refresh_btn.setFixedWidth(48)
+        self.refresh_btn.clicked.connect(self._refresh_windows)
+        layout.addWidget(self.refresh_btn)
 
         self.toggle_btn = QPushButton("監視開始")
         self.toggle_btn.setCheckable(True)
@@ -911,10 +914,22 @@ class BattleMonitorWidget(QGroupBox):
 
         layout.addStretch()
 
+        if HAS_CAPTURE:
+            self._refresh_windows()
+
         if not HAS_BATTLE_MONITOR:
             self.toggle_btn.setEnabled(False)
             self.status_lbl.setText("⚠ pip install mss easyocr が必要です")
             self.status_lbl.setStyleSheet("color:#c0392b; font-size:11px;")
+
+    def _refresh_windows(self):
+        if not HAS_CAPTURE:
+            return
+        self._windows = list_windows()
+        self.win_cb.clear()
+        self.win_cb.addItem("（モニター全体）", userData=None)
+        for w in self._windows:
+            self.win_cb.addItem(w.title, userData=w)
 
     def _on_toggle(self, checked: bool):
         if checked:
@@ -924,13 +939,15 @@ class BattleMonitorWidget(QGroupBox):
 
     def _start(self):
         cfg = load_battle_config()
-        cfg["monitor"] = self.monitor_spin.value()
-        self._monitor = BattleMonitor(config=cfg)
+        win_info = self.win_cb.currentData()
+        window_title = win_info.title if win_info else ""
+        self._monitor = BattleMonitor(config=cfg, window_title=window_title)
         self._monitor.opponent_changed.connect(self._on_detected)
         self._monitor.status_changed.connect(self._on_status)
         self._monitor.start()
         self.toggle_btn.setText("監視停止")
-        self.monitor_spin.setEnabled(False)
+        self.win_cb.setEnabled(False)
+        self.refresh_btn.setEnabled(False)
         self.status_lbl.setText("起動中...")
         self.status_lbl.setStyleSheet("color:#2980b9; font-size:11px;")
 
@@ -942,7 +959,8 @@ class BattleMonitorWidget(QGroupBox):
         self.toggle_btn.setText("監視開始")
         self.status_lbl.setText("停止中")
         self.status_lbl.setStyleSheet("color:#888; font-size:11px;")
-        self.monitor_spin.setEnabled(True)
+        self.win_cb.setEnabled(True)
+        self.refresh_btn.setEnabled(True)
 
     @pyqtSlot(str, str)
     def _on_detected(self, key: str, name_ja: str):
