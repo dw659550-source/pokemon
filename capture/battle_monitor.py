@@ -231,6 +231,7 @@ class BattleMonitor(QThread):
 
         self.status_changed.emit("監視中...")
         self._running = True
+        own_frame_counter = 0
 
         with mss.mss() as sct:
             monitors = sct.monitors
@@ -244,8 +245,31 @@ class BattleMonitor(QThread):
                         time.sleep(0.3)
                         continue
                     h, w  = frame.shape[:2]
-                    h, w  = frame.shape[:2]
                     cfg   = self._cfg
+
+                    import cv2 as _cv2
+                    import numpy as _np
+                    pad = int(w * 0.03)
+
+                    # ── 自分のポケモン OCR（約1秒ごと・変化検出に依存しない）──
+                    own_frame_counter += 1
+                    ox1 = cfg.get("own_name_x1", 0.0)
+                    ox2 = cfg.get("own_name_x2", 0.0)
+                    if ox1 < ox2 and own_frame_counter >= 15:
+                        own_frame_counter = 0
+                        on1 = max(0, int(w * ox1) - pad)
+                        on2 = max(0, int(h * cfg["own_name_y1"]) - 8)
+                        on3 = min(w, int(w * ox2) + pad)
+                        on4 = min(h, int(h * cfg["own_name_y2"]) + 8)
+                        own_crop = frame[on2:on4, on1:on3]
+                        proc2 = _ocr_preprocess(own_crop, _cv2, _np)
+                        texts2 = reader.readtext(proc2, detail=0)
+                        text2  = "".join(texts2).strip()
+                        if text2 and text2 != self._prev_own:
+                            key2, name2 = match_pokemon_name(text2)
+                            if key2:
+                                self._prev_own = text2
+                                self.own_changed.emit(key2, name2)
 
                     # ── 変化検出（ダウンサンプル平均色で比較）──
                     dx1 = int(w * cfg["detect_x1"])
@@ -262,11 +286,7 @@ class BattleMonitor(QThread):
 
                     self._prev_mean = cur_mean
 
-                    import cv2 as _cv2
-                    import numpy as _np
-
                     # ── 相手ポケモン OCR ──
-                    pad = int(w * 0.03)
                     nx1 = max(0, int(w * cfg["name_x1"]) - pad)
                     ny1 = max(0, int(h * cfg["name_y1"]) - 8)
                     nx2 = min(w, int(w * cfg["name_x2"]) + pad)
@@ -276,7 +296,6 @@ class BattleMonitor(QThread):
                     texts = reader.readtext(proc, detail=0)
                     text  = "".join(texts).strip()
                     if not text:
-                        # OCRが空＝交代演出中の可能性 → 連続5フレーム空ならprev_nameをリセット
                         self._empty_frames += 1
                         if self._empty_frames >= 5:
                             self._prev_name = ""
@@ -291,24 +310,6 @@ class BattleMonitor(QThread):
                                 self.status_changed.emit(f"相手: {name_ja}")
                             else:
                                 self.status_changed.emit(f"マッチなし: [{text}]")
-
-                    # ── 自分のポケモン OCR（領域が設定されている場合のみ）──
-                    ox1 = cfg.get("own_name_x1", 0.0)
-                    ox2 = cfg.get("own_name_x2", 0.0)
-                    if ox1 < ox2:
-                        on1 = max(0, int(w * ox1) - pad)
-                        on2 = max(0, int(h * cfg["own_name_y1"]) - 8)
-                        on3 = min(w, int(w * ox2) + pad)
-                        on4 = min(h, int(h * cfg["own_name_y2"]) + 8)
-                        own_crop = frame[on2:on4, on1:on3]
-                        proc2 = _ocr_preprocess(own_crop, _cv2, _np)
-                        texts2 = reader.readtext(proc2, detail=0)
-                        text2  = "".join(texts2).strip()
-                        if text2 and text2 != self._prev_own:
-                            key2, name2 = match_pokemon_name(text2)
-                            if key2:
-                                self._prev_own = text2
-                                self.own_changed.emit(key2, name2)
 
                 except Exception as e:
                     logger.error("監視エラー: %s", e)
