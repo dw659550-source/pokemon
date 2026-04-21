@@ -242,10 +242,11 @@ class BattleMonitor(QThread):
                     self._prev_mean = cur_mean
 
                     # ── OCR ──
-                    nx1 = int(w * cfg["name_x1"])
-                    ny1 = int(h * cfg["name_y1"])
-                    nx2 = int(w * cfg["name_x2"])
-                    ny2 = int(h * cfg["name_y2"])
+                    pad = int(w * 0.03)  # 左右に3%分余白を追加
+                    nx1 = max(0, int(w * cfg["name_x1"]) - pad)
+                    ny1 = max(0, int(h * cfg["name_y1"]) - 4)
+                    nx2 = min(w, int(w * cfg["name_x2"]) + pad)
+                    ny2 = min(h, int(h * cfg["name_y2"]) + 4)
                     name_crop = frame[ny1:ny2, nx1:nx2]
 
                     # 白テキスト抽出 + 拡大でOCR精度を改善
