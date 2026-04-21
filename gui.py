@@ -873,8 +873,9 @@ class BattleStatePanel(QGroupBox):
 # ─────────────────────────────────────────────────────────────────────────────
 
 class BattleMonitorWidget(QGroupBox):
-    """対戦画面を常時監視し、相手ポケモン名を自動検出するパネル"""
+    """対戦画面を常時監視し、相手・自分のポケモン名を自動検出するパネル"""
     opponent_detected = pyqtSignal(str, str)  # (key, name_ja)
+    own_detected      = pyqtSignal(str, str)  # (key, name_ja)
 
     def __init__(self, parent=None):
         super().__init__("対戦中 — 相手ポケモン自動検出（リアルタイム）", parent)
@@ -943,6 +944,7 @@ class BattleMonitorWidget(QGroupBox):
         window_title = win_info.title if win_info else ""
         self._monitor = BattleMonitor(config=cfg, window_title=window_title)
         self._monitor.opponent_changed.connect(self._on_detected)
+        self._monitor.own_changed.connect(self._on_own_detected)
         self._monitor.status_changed.connect(self._on_status)
         self._monitor.start()
         self.toggle_btn.setText("監視停止")
@@ -966,10 +968,14 @@ class BattleMonitorWidget(QGroupBox):
     def _on_detected(self, key: str, name_ja: str):
         self.opponent_detected.emit(key, name_ja)
 
+    @pyqtSlot(str, str)
+    def _on_own_detected(self, key: str, name_ja: str):
+        self.own_detected.emit(key, name_ja)
+
     @pyqtSlot(str)
     def _on_status(self, msg: str):
         self.status_lbl.setText(msg)
-        if "検出:" in msg:
+        if "相手:" in msg:
             self.status_lbl.setStyleSheet("color:#27ae60; font-weight:bold; font-size:11px;")
         elif "失敗" in msg or "エラー" in msg or "見つかりません" in msg:
             self.status_lbl.setStyleSheet("color:#c0392b; font-size:11px;")
@@ -1289,6 +1295,7 @@ class MainWindow(QMainWindow):
 
         self.battle_monitor_widget = BattleMonitorWidget()
         self.battle_monitor_widget.opponent_detected.connect(self._on_battle_detected)
+        self.battle_monitor_widget.own_detected.connect(self._on_own_battle_detected)
         cap_layout.addWidget(self.battle_monitor_widget)
 
         self.capture_panel = CapturePanel()
@@ -1342,6 +1349,12 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(f"自動検出: {name_ja} を相手に設定しました")
         if HAS_SCRAPER:
             self.usage_widget.fetch(key)
+
+    @pyqtSlot(str, str)
+    def _on_own_battle_detected(self, key: str, name_ja: str):
+        """自分のポケモン自動検出 → 自分パネルに反映"""
+        self.atk_panel.pokemon_cb.set_key(key)
+        self.statusBar().showMessage(f"自動検出: {name_ja} を自分に設定しました")
 
     @pyqtSlot(str)
     def _on_pokemon_detected(self, pokemon_key: str):

@@ -103,16 +103,59 @@ def run_calibration(img_path: str, monitor: int):
                 "detect_y1": round(y1o / orig_h, 4),
                 "detect_x2": round(det_x2o / orig_w, 4),
                 "detect_y2": round(det_y2o / orig_h, 4),
+                "own_name_x1": 0.0,
+                "own_name_y1": 0.0,
+                "own_name_x2": 0.0,
+                "own_name_y2": 0.0,
             }
+
+            # 既存の own_name 設定があれば引き継ぐ
+            if BATTLE_CONFIG_PATH.exists():
+                try:
+                    import json as _json
+                    old = _json.loads(BATTLE_CONFIG_PATH.read_text(encoding="utf-8"))
+                    for k in ("own_name_x1","own_name_y1","own_name_x2","own_name_y2"):
+                        if k in old:
+                            cfg[k] = old[k]
+                except Exception:
+                    pass
+
+            save_battle_config(cfg)
+            # 自分ポケモン領域の設定へ進む
+            clicks.clear()
+            instr.config(text="② 自分のポケモン名テキストの左上をクリック  →  右下をクリック  （スキップ: S キー）")
+            status.config(text="自分のポケモン名の左上をクリック（スキップするには S キー）")
+            redraw()
+            # フラグで2段階目に
+            root._phase = "own"
+
+        elif key == "s" and getattr(root, "_phase", "") == "own":
+            print(f"\n保存完了（自分側スキップ）: {BATTLE_CONFIG_PATH}")
+            root.destroy()
+
+        elif key == "return" and getattr(root, "_phase", "") == "own" and len(clicks) == 2:
+            x1d, y1d = clicks[0]
+            x2d, y2d = clicks[1]
+            x1o, y1o = x1d / scale, y1d / scale
+            x2o, y2o = x2d / scale, y2d / scale
+            import json as _json
+            cfg = _json.loads(BATTLE_CONFIG_PATH.read_text(encoding="utf-8"))
+            cfg["own_name_x1"] = round(x1o / orig_w, 4)
+            cfg["own_name_y1"] = round(y1o / orig_h, 4)
+            cfg["own_name_x2"] = round(x2o / orig_w, 4)
+            cfg["own_name_y2"] = round(y2o / orig_h, 4)
             save_battle_config(cfg)
             print(f"\n保存完了: {BATTLE_CONFIG_PATH}")
-            print(json.dumps(cfg, indent=2, ensure_ascii=False))
+            print(_json.dumps(cfg, indent=2, ensure_ascii=False))
             root.destroy()
 
         elif key == "r":
             clicks.clear()
             redraw()
-            status.config(text="相手ポケモン名の左上をクリックしてください")
+            if getattr(root, "_phase", "") == "own":
+                status.config(text="自分のポケモン名の左上をクリック（スキップするには S キー）")
+            else:
+                status.config(text="相手ポケモン名の左上をクリックしてください")
 
         elif key == "escape":
             root.destroy()

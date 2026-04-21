@@ -21,6 +21,7 @@ POKEMON_PATH       = Path(__file__).parent.parent / "data" / "pokemon.json"
 # SV 系のデフォルト位置（キャリブレーションで上書きされる）
 DEFAULT_BATTLE_CONFIG = {
     "monitor": 1,
+    # 相手ポケモン名領域
     "name_x1":   0.515,
     "name_y1":   0.048,
     "name_x2":   0.790,
@@ -29,6 +30,11 @@ DEFAULT_BATTLE_CONFIG = {
     "detect_y1": 0.048,
     "detect_x2": 0.950,
     "detect_y2": 0.175,
+    # 自分のポケモン名領域（未設定時はスキップ）
+    "own_name_x1": 0.0,
+    "own_name_y1": 0.0,
+    "own_name_x2": 0.0,
+    "own_name_y2": 0.0,
 }
 
 
@@ -146,13 +152,26 @@ def match_pokemon_name(text: str) -> tuple[str, str] | tuple[None, None]:
 
 # ── BattleMonitor ─────────────────────────────────────────────────────────────
 
+def _ocr_preprocess(crop_bgr, cv2_mod, np_mod):
+    """白文字を抽出して3倍拡大した画像を返す"""
+    hsv  = cv2_mod.cvtColor(crop_bgr, cv2_mod.COLOR_BGR2HSV)
+    s, v = hsv[:, :, 1], hsv[:, :, 2]
+    mask = ((np_mod.array(s) < 60) & (np_mod.array(v) > 150)).astype("uint8") * 255
+    return cv2_mod.resize(
+        mask,
+        (mask.shape[1] * 3, mask.shape[0] * 3),
+        interpolation=cv2_mod.INTER_NEAREST,
+    )
+
+
 class BattleMonitor(QThread):
     """
-    対戦画面を ~15fps でキャプチャし、相手HPバー名前領域を監視する。
-    ポケモンが変わったと判断したら opponent_changed を emit する。
+    対戦画面を ~15fps でキャプチャし、相手・自分のHPバー名前領域を監視する。
+    ポケモンが変わったと判断したら各シグナルを emit する。
     window_title が設定されている場合はそのウィンドウだけをキャプチャする。
     """
     opponent_changed = pyqtSignal(str, str)  # (key, name_ja)
+    own_changed      = pyqtSignal(str, str)  # (key, name_ja)
     status_changed   = pyqtSignal(str)
 
     def __init__(self, config: dict | None = None, window_title: str = ""):
@@ -162,6 +181,7 @@ class BattleMonitor(QThread):
         self._running      = False
         self._prev_mean: np.ndarray | None = None
         self._prev_name    = ""
+        self._prev_own     = ""
 
     def update_config(self, cfg: dict):
         self._cfg = cfg
@@ -241,42 +261,45 @@ class BattleMonitor(QThread):
 
                     self._prev_mean = cur_mean
 
-                    # ── OCR ──
-                    pad = int(w * 0.03)  # 左右に3%分余白を追加
-                    nx1 = max(0, int(w * cfg["name_x1"]) - pad)
-                    ny1 = max(0, int(h * cfg["name_y1"]) - 4)
-                    nx2 = min(w, int(w * cfg["name_x2"]) + pad)
-                    ny2 = min(h, int(h * cfg["name_y2"]) + 4)
-                    name_crop = frame[ny1:ny2, nx1:nx2]
-
-                    # 白テキスト抽出 + 拡大でOCR精度を改善
                     import cv2 as _cv2
                     import numpy as _np
-                    # 低彩度 & 高輝度のピクセルを白文字として抽出
-                    hsv = _cv2.cvtColor(name_crop, _cv2.COLOR_BGR2HSV)
-                    s, v = hsv[:, :, 1], hsv[:, :, 2]
-                    mask = ((_np.array(s) < 60) & (_np.array(v) > 150)).astype("uint8") * 255
-                    # 3倍拡大
-                    proc = _cv2.resize(
-                        mask,
-                        (mask.shape[1] * 3, mask.shape[0] * 3),
-                        interpolation=_cv2.INTER_NEAREST,
-                    )
-                    # デバッグ用: 最新クロップを保存（確認後に削除してください）
-                    _cv2.imwrite("debug_name_crop.png", proc)
 
+                    # ── 相手ポケモン OCR ──
+                    pad = int(w * 0.03)
+                    nx1 = max(0, int(w * cfg["name_x1"]) - pad)
+                    ny1 = max(0, int(h * cfg["name_y1"]) - 8)
+                    nx2 = min(w, int(w * cfg["name_x2"]) + pad)
+                    ny2 = min(h, int(h * cfg["name_y2"]) + 8)
+                    opp_crop = frame[ny1:ny2, nx1:nx2]
+                    proc = _ocr_preprocess(opp_crop, _cv2, _np)
                     texts = reader.readtext(proc, detail=0)
                     text  = "".join(texts).strip()
-                    if not text or text == self._prev_name:
-                        continue
+                    if text and text != self._prev_name:
+                        key, name_ja = match_pokemon_name(text)
+                        if key:
+                            self._prev_name = text
+                            self.opponent_changed.emit(key, name_ja)
+                            self.status_changed.emit(f"相手: {name_ja}")
+                        else:
+                            self.status_changed.emit(f"マッチなし: [{text}]")
 
-                    key, name_ja = match_pokemon_name(text)
-                    if key:
-                        self._prev_name = text
-                        self.opponent_changed.emit(key, name_ja)
-                        self.status_changed.emit(f"検出: {name_ja}  [OCR: {text}]")
-                    else:
-                        self.status_changed.emit(f"マッチなし: [{text}]")
+                    # ── 自分のポケモン OCR（領域が設定されている場合のみ）──
+                    ox1 = cfg.get("own_name_x1", 0.0)
+                    ox2 = cfg.get("own_name_x2", 0.0)
+                    if ox1 < ox2:
+                        on1 = max(0, int(w * ox1) - pad)
+                        on2 = max(0, int(h * cfg["own_name_y1"]) - 8)
+                        on3 = min(w, int(w * ox2) + pad)
+                        on4 = min(h, int(h * cfg["own_name_y2"]) + 8)
+                        own_crop = frame[on2:on4, on1:on3]
+                        proc2 = _ocr_preprocess(own_crop, _cv2, _np)
+                        texts2 = reader.readtext(proc2, detail=0)
+                        text2  = "".join(texts2).strip()
+                        if text2 and text2 != self._prev_own:
+                            key2, name2 = match_pokemon_name(text2)
+                            if key2:
+                                self._prev_own = text2
+                                self.own_changed.emit(key2, name2)
 
                 except Exception as e:
                     logger.error("監視エラー: %s", e)
