@@ -144,9 +144,12 @@ class SpriteDatabase:
             return
 
         logger.info("スプライトヒストグラムを構築中 (%d 件)...", sprite_count)
+        valid_keys = set(self._names.keys())
         built = 0
         for png in SPRITES_DIR.glob("*.png"):
             key = png.stem
+            if key not in valid_keys:
+                continue
             try:
                 img  = Image.open(png)
                 mask = _make_alpha_mask(img)
