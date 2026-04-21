@@ -169,7 +169,7 @@
     "effect": "facade"
   },
   "high-horsepower": {
-    "name_ja": "じだんだ",
+    "name_ja": "10まんばりき",
     "type": "ground",
     "category": "physical",
     "power": 95,
@@ -375,7 +375,7 @@
     ]
   },
   "head-smash": {
-    "name_ja": "フレアドライブ",
+    "name_ja": "もろはのずつき",
     "type": "rock",
     "category": "physical",
     "power": 150,
@@ -572,7 +572,7 @@
     "flags": []
   },
   "first-impression": {
-    "name_ja": "インファイト",
+    "name_ja": "であいがしら",
     "type": "bug",
     "category": "physical",
     "power": 90,
@@ -597,7 +597,7 @@
     ]
   },
   "jet-punch": {
-    "name_ja": "マッハパンチ",
+    "name_ja": "ジェットパンチ",
     "type": "water",
     "category": "physical",
     "power": 60,
@@ -610,7 +610,7 @@
     ]
   },
   "glacial-lance": {
-    "name_ja": "こおりのやり",
+    "name_ja": "ブリザードランス",
     "type": "ice",
     "category": "physical",
     "power": 120,
@@ -885,7 +885,7 @@
     "flags": []
   },
   "moongeist-beam": {
-    "name_ja": "ムーンライトブラスター",
+    "name_ja": "シャドーレイ",
     "type": "ghost",
     "category": "special",
     "power": 100,
@@ -918,7 +918,7 @@
     ]
   },
   "fiery-wrath": {
-    "name_ja": "せいなるほのお",
+    "name_ja": "もえあがるいかり",
     "type": "dark",
     "category": "special",
     "power": 90,
@@ -994,7 +994,7 @@
     "flags": []
   },
   "spacial-rend": {
-    "name_ja": "やぶれたせかい",
+    "name_ja": "あくうせつだん",
     "type": "dragon",
     "category": "special",
     "power": 100,
@@ -1114,7 +1114,7 @@
     "flags": []
   },
   "electro-drift": {
-    "name_ja": "エレクトロドリフト",
+    "name_ja": "イナズマドライブ",
     "type": "electric",
     "category": "special",
     "power": 100,
@@ -1316,7 +1316,7 @@
     "flags": []
   },
   "flower-trick": {
-    "name_ja": "フラワートリック",
+    "name_ja": "トリックフラワー",
     "type": "grass",
     "category": "physical",
     "power": 70,
@@ -1364,7 +1364,7 @@
     "effect": "electro_ball"
   },
   "eruption": {
-    "name_ja": "ふんえん",
+    "name_ja": "ふんか",
     "type": "fire",
     "category": "special",
     "power": 150,
@@ -1396,7 +1396,7 @@
     "flags": []
   },
   "rock-blast": {
-    "name_ja": "いわおとし",
+    "name_ja": "ロックブラスト",
     "type": "rock",
     "category": "physical",
     "power": 25,
@@ -1438,7 +1438,7 @@
     ]
   },
   "population-bomb": {
-    "name_ja": "ポピュレーションボム",
+    "name_ja": "ネズミざん",
     "type": "normal",
     "category": "physical",
     "power": 20,
@@ -1462,7 +1462,7 @@
     ]
   },
   "dragon-darts": {
-    "name_ja": "ドラゴンダーツ",
+    "name_ja": "ドラゴンアロー",
     "type": "dragon",
     "category": "physical",
     "power": 50,
@@ -1484,7 +1484,7 @@
     ]
   },
   "double-iron-bash": {
-    "name_ja": "ダブルアイアンバッシャー",
+    "name_ja": "ダブルパンツァー",
     "type": "steel",
     "category": "physical",
     "power": 60,
@@ -1507,7 +1507,7 @@
     "flags": []
   },
   "tail-slap": {
-    "name_ja": "テールスラップ",
+    "name_ja": "スイープビンタ",
     "type": "normal",
     "category": "physical",
     "power": 25,
@@ -1519,7 +1519,7 @@
     ]
   },
   "arm-thrust": {
-    "name_ja": "むらうち",
+    "name_ja": "つっぱり",
     "type": "fighting",
     "category": "physical",
     "power": 15,
@@ -1531,7 +1531,7 @@
     ]
   },
   "bone-rush": {
-    "name_ja": "ホネラッシュ",
+    "name_ja": "ボーンラッシュ",
     "type": "ground",
     "category": "physical",
     "power": 25,
@@ -1541,7 +1541,7 @@
     "flags": []
   },
   "fury-swipes": {
-    "name_ja": "ひっかく",
+    "name_ja": "みだれひっかき",
     "type": "normal",
     "category": "physical",
     "power": 18,
@@ -1565,7 +1565,7 @@
     ]
   },
   "dual-chop": {
-    "name_ja": "ドラゴンテール",
+    "name_ja": "ダブルチョップ",
     "type": "dragon",
     "category": "physical",
     "power": 40,
@@ -1589,7 +1589,7 @@
     ]
   },
   "double-hit": {
-    "name_ja": "ダブルヒット",
+    "name_ja": "ダブルアタック",
     "type": "normal",
     "category": "physical",
     "power": 35,
@@ -1635,7 +1635,7 @@
     "effect": "psyshock"
   },
   "luster-purge": {
-    "name_ja": "ルスターパージ",
+    "name_ja": "ラスターパージ",
     "type": "psychic",
     "category": "special",
     "power": 70,
@@ -1665,7 +1665,7 @@
     "flags": []
   },
   "sunsteel-strike": {
-    "name_ja": "サンスチールストライク",
+    "name_ja": "メテオドライブ",
     "type": "steel",
     "category": "physical",
     "power": 100,
@@ -1677,7 +1677,7 @@
     ]
   },
   "secret-sword": {
-    "name_ja": "みきりのつるぎ",
+    "name_ja": "しんぴのつるぎ",
     "type": "fighting",
     "category": "special",
     "power": 85,
@@ -1690,7 +1690,7 @@
     "effect": "psyshock"
   },
   "behemoth-bash": {
-    "name_ja": "ビーストブースト",
+    "name_ja": "きょじゅうだん",
     "type": "steel",
     "category": "physical",
     "power": 100,
@@ -1702,7 +1702,7 @@
     ]
   },
   "behemoth-blade": {
-    "name_ja": "ビーストブースト",
+    "name_ja": "きょじゅうざん",
     "type": "steel",
     "category": "physical",
     "power": 100,
@@ -1725,7 +1725,7 @@
     "flags": []
   },
   "ruination": {
-    "name_ja": "はんげきのじゅもん",
+    "name_ja": "カタストロフィ",
     "type": "dark",
     "category": "special",
     "power": null,
@@ -1768,7 +1768,7 @@
     ]
   },
   "make-it-rain": {
-    "name_ja": "コインチャージ",
+    "name_ja": "ゴールドラッシュ",
     "type": "steel",
     "category": "special",
     "power": 120,
@@ -1778,7 +1778,7 @@
     "flags": []
   },
   "rage-fist": {
-    "name_ja": "アームハンマー",
+    "name_ja": "ふんどのこぶし",
     "type": "ghost",
     "category": "physical",
     "power": 50,
@@ -1791,7 +1791,7 @@
     ]
   },
   "kowtow-cleave": {
-    "name_ja": "ひざまずく",
+    "name_ja": "ドゲザン",
     "type": "dark",
     "category": "physical",
     "power": 85,
@@ -1816,7 +1816,7 @@
     ]
   },
   "bitter-blade": {
-    "name_ja": "ほのおのつるぎ",
+    "name_ja": "むねんのつるぎ",
     "type": "fire",
     "category": "physical",
     "power": 90,
@@ -1829,7 +1829,7 @@
     ]
   },
   "ceaseless-edge": {
-    "name_ja": "ムゲンのやいば",
+    "name_ja": "ひけん・ちえなみ",
     "type": "dark",
     "category": "physical",
     "power": 65,
@@ -1878,7 +1878,7 @@
     ]
   },
   "mighty-cleave": {
-    "name_ja": "きょだいきりひらく",
+    "name_ja": "パワフルエッジ",
     "type": "rock",
     "category": "physical",
     "power": 95,
@@ -1891,7 +1891,7 @@
     ]
   },
   "stone-axe": {
-    "name_ja": "アックスドロップ",
+    "name_ja": "がんせきアックス",
     "type": "rock",
     "category": "physical",
     "power": 65,
@@ -1904,7 +1904,7 @@
     ]
   },
   "springtide-storm": {
-    "name_ja": "ラブリースター",
+    "name_ja": "はるのあらし",
     "type": "fairy",
     "category": "special",
     "power": 100,
@@ -1914,7 +1914,7 @@
     "flags": []
   },
   "bleakwind-storm": {
-    "name_ja": "きりさく",
+    "name_ja": "こがらしあらし",
     "type": "flying",
     "category": "special",
     "power": 100,
@@ -1924,7 +1924,7 @@
     "flags": []
   },
   "wildbolt-storm": {
-    "name_ja": "いかりのうねり",
+    "name_ja": "かみなりあらし",
     "type": "electric",
     "category": "special",
     "power": 100,
@@ -1934,7 +1934,7 @@
     "flags": []
   },
   "sandsear-storm": {
-    "name_ja": "ねつさかまくすな",
+    "name_ja": "ねっさのあらし",
     "type": "ground",
     "category": "special",
     "power": 100,
@@ -1944,7 +1944,7 @@
     "flags": []
   },
   "last-respects": {
-    "name_ja": "はかいのひかり",
+    "name_ja": "おはかまいり",
     "type": "ghost",
     "category": "physical",
     "power": 50,
@@ -1954,7 +1954,7 @@
     "flags": []
   },
   "collision-course": {
-    "name_ja": "テクトニックレイブ",
+    "name_ja": "アクセルブレイク",
     "type": "fighting",
     "category": "physical",
     "power": 100,
@@ -1965,20 +1965,8 @@
       "contact"
     ]
   },
-  "annihilape": {
-    "name_ja": "かみくだく",
-    "type": "fighting",
-    "category": "physical",
-    "power": 100,
-    "accuracy": 100,
-    "pp": 10,
-    "priority": 0,
-    "flags": [
-      "contact"
-    ]
-  },
   "fillet-away": {
-    "name_ja": "なみだめ",
+    "name_ja": "みをけずる",
     "type": "normal",
     "category": "status",
     "power": null,
@@ -1986,18 +1974,6 @@
     "pp": 10,
     "priority": 0,
     "flags": []
-  },
-  "chi-strike": {
-    "name_ja": "きあいだま",
-    "type": "fighting",
-    "category": "physical",
-    "power": 50,
-    "accuracy": 100,
-    "pp": 10,
-    "priority": 0,
-    "flags": [
-      "contact"
-    ]
   },
   "armor-cannon": {
     "name_ja": "アーマーキャノン",
@@ -2010,7 +1986,7 @@
     "flags": []
   },
   "bitter-malice": {
-    "name_ja": "のろいのルーレット",
+    "name_ja": "うらみつらみ",
     "type": "ghost",
     "category": "special",
     "power": 75,
@@ -2020,7 +1996,7 @@
     "flags": []
   },
   "axe-kick": {
-    "name_ja": "せいなるつるぎ",
+    "name_ja": "かかとおとし",
     "type": "fighting",
     "category": "physical",
     "power": 120,
@@ -2032,7 +2008,7 @@
     ]
   },
   "esper-wing": {
-    "name_ja": "サイコウイング",
+    "name_ja": "オーラウイング",
     "type": "psychic",
     "category": "special",
     "power": 80,
@@ -2136,7 +2112,7 @@
     "flags": []
   },
   "oblivion-wing": {
-    "name_ja": "ランページ",
+    "name_ja": "デスウイング",
     "type": "flying",
     "category": "special",
     "power": 80,
@@ -2146,7 +2122,7 @@
     "flags": []
   },
   "thunderous-kick": {
-    "name_ja": "ライトニングキック",
+    "name_ja": "らいめいげり",
     "type": "fighting",
     "category": "physical",
     "power": 90,
@@ -2158,7 +2134,7 @@
     ]
   },
   "misty-explosion": {
-    "name_ja": "ミストフィールド",
+    "name_ja": "ミストバースト",
     "type": "fairy",
     "category": "special",
     "power": 100,
@@ -2168,7 +2144,7 @@
     "flags": []
   },
   "grassy-glide": {
-    "name_ja": "グラスフィールド",
+    "name_ja": "グラススライダー",
     "type": "grass",
     "category": "physical",
     "power": 55,
@@ -2180,7 +2156,7 @@
     ]
   },
   "rising-voltage": {
-    "name_ja": "でんきフィールド",
+    "name_ja": "ライジングボルト",
     "type": "electric",
     "category": "special",
     "power": 70,
@@ -2190,7 +2166,7 @@
     "flags": []
   },
   "terrain-pulse": {
-    "name_ja": "フィールドフォース",
+    "name_ja": "だいちのはどう",
     "type": "normal",
     "category": "special",
     "power": 50,
@@ -2213,7 +2189,7 @@
     ]
   },
   "boomburst": {
-    "name_ja": "はかいのねごえ",
+    "name_ja": "ばくおんぱ",
     "type": "normal",
     "category": "special",
     "power": 140,
@@ -2225,7 +2201,7 @@
     ]
   },
   "clangorous-soulblaze": {
-    "name_ja": "ソウルビートZ",
+    "name_ja": "ブレイジングソウルビート",
     "type": "dragon",
     "category": "special",
     "power": 185,
@@ -2237,7 +2213,7 @@
     ]
   },
   "snap-trap": {
-    "name_ja": "するどいキバ",
+    "name_ja": "トラバサミ",
     "type": "grass",
     "category": "physical",
     "power": 35,
@@ -2260,7 +2236,7 @@
     "effect": "half_hp"
   },
   "steel-roller": {
-    "name_ja": "スチールローラー",
+    "name_ja": "アイアンローラー",
     "type": "steel",
     "category": "physical",
     "power": 130,
@@ -2282,7 +2258,7 @@
     "flags": []
   },
   "electric-terrain": {
-    "name_ja": "エレクトリックフィールド",
+    "name_ja": "エレキフィールド",
     "type": "electric",
     "category": "status",
     "power": null,
