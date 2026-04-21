@@ -270,6 +270,9 @@ class BattleMonitor(QThread):
                             if key2:
                                 self._prev_own = text2
                                 self.own_changed.emit(key2, name2)
+                                self.status_changed.emit(f"自分: {name2} / 相手: {self._prev_name or '未検出'}")
+                            else:
+                                self.status_changed.emit(f"自分マッチなし: [{text2}]")
 
                     # ── 変化検出（ダウンサンプル平均色で比較）──
                     dx1 = int(w * cfg["detect_x1"])
