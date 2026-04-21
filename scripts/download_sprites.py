@@ -25,6 +25,16 @@ SPRITES_DIR = Path(__file__).parent.parent / "data" / "sprites"
 POKE_PATH   = Path(__file__).parent.parent / "data" / "pokemon.json"
 HIST_CACHE  = Path(__file__).parent.parent / "data" / "sprite_hists.pkl"
 
+# app_key → PokeAPI キー名が異なるもの / 存在しないものの代替マッピング
+POKEAPI_KEY_OVERRIDE = {
+    "tauros-paldea-combat":   "tauros-paldea-combat-breed",
+    "tauros-paldea-blaze":    "tauros-paldea-blaze-breed",
+    "tauros-paldea-aqua":     "tauros-paldea-aqua-breed",
+    "floette-eternal-mega":   "floette-eternal",   # PokeAPI に存在しないためベースフォルムで代替
+    "meowstic-male-mega":     "meowstic-male",
+    "meowstic-female-mega":   "meowstic-female",
+}
+
 
 def get(url: str, retries=3):
     for i in range(retries):
@@ -72,11 +82,12 @@ def main():
             continue
 
         try:
-            poke_url = f"{BASE_URL}/pokemon/{key}"
+            api_key  = POKEAPI_KEY_OVERRIDE.get(key, key)
+            poke_url = f"{BASE_URL}/pokemon/{api_key}"
             try:
                 poke_data = get(poke_url).json()
             except Exception:
-                species_data = get(f"{BASE_URL}/pokemon-species/{key}").json()
+                species_data = get(f"{BASE_URL}/pokemon-species/{api_key}").json()
                 poke_url = next(
                     (v["pokemon"]["url"] for v in species_data.get("varieties", [])
                      if v["is_default"]),
