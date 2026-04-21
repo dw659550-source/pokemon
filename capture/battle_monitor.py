@@ -248,19 +248,22 @@ class BattleMonitor(QThread):
                     ny2 = int(h * cfg["name_y2"])
                     name_crop = frame[ny1:ny2, nx1:nx2]
 
-                    # 拡大 + グレースケール + コントラスト強調でOCR精度を改善
+                    # 白テキスト抽出 + 拡大でOCR精度を改善
                     import cv2 as _cv2
-                    scale = max(1, 200 // max(name_crop.shape[0], 1))
-                    if scale > 1:
-                        name_crop = _cv2.resize(
-                            name_crop,
-                            (name_crop.shape[1] * scale, name_crop.shape[0] * scale),
-                            interpolation=_cv2.INTER_CUBIC,
-                        )
-                    gray = _cv2.cvtColor(name_crop, _cv2.COLOR_BGR2GRAY)
-                    gray = _cv2.equalizeHist(gray)
+                    # V チャンネルで明るいピクセル（白文字）を抽出
+                    hsv = _cv2.cvtColor(name_crop, _cv2.COLOR_BGR2HSV)
+                    v   = hsv[:, :, 2]
+                    _, proc = _cv2.threshold(v, 180, 255, _cv2.THRESH_BINARY)
+                    # 3倍拡大
+                    proc = _cv2.resize(
+                        proc,
+                        (proc.shape[1] * 3, proc.shape[0] * 3),
+                        interpolation=_cv2.INTER_NEAREST,
+                    )
+                    # デバッグ用: 最新クロップを保存（確認後に削除してください）
+                    _cv2.imwrite("debug_name_crop.png", proc)
 
-                    texts = reader.readtext(gray, detail=0)
+                    texts = reader.readtext(proc, detail=0)
                     text  = "".join(texts).strip()
                     if not text or text == self._prev_name:
                         continue
