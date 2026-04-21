@@ -17,6 +17,26 @@ with open(_DATA / "type_chart.json", encoding="utf-8") as f:
     _TYPE_CHART: dict = json.load(f)
 
 
+# ── 多段ヒット技テーブル (move_id → (min_hits, max_hits)) ─────────────────
+_MULTI_HIT: dict[str, tuple[int, int]] = {
+    # 固定2ヒット
+    "double-kick": (2, 2), "bonemerang": (2, 2), "double-hit": (2, 2),
+    "dual-chop": (2, 2), "gear-grind": (2, 2), "dual-wingbeat": (2, 2),
+    "dragon-darts": (2, 2), "double-iron-bash": (2, 2),
+    "twineedle": (2, 2),
+    # 固定3ヒット
+    "surging-strikes": (3, 3), "triple-axel": (3, 3),
+    # 2〜5ヒット
+    "bullet-seed": (2, 5), "rock-blast": (2, 5), "icicle-spear": (2, 5),
+    "pin-missile": (2, 5), "spike-cannon": (2, 5), "comet-punch": (2, 5),
+    "fury-attack": (2, 5), "fury-swipes": (2, 5), "double-slap": (2, 5),
+    "barrage": (2, 5), "water-shuriken": (2, 5), "arm-thrust": (2, 5),
+    "bone-rush": (2, 5), "tail-slap": (2, 5), "scale-shot": (2, 5),
+    # 1〜10ヒット
+    "population-bomb": (1, 10),
+}
+
+
 # ── ユーティリティ ──────────────────────────────────────────────────────────
 
 def type_effectiveness(move_type: str, defender_types: list[str]) -> float:
@@ -149,8 +169,16 @@ class DamageCalculator:
             ) / 50
         ) + 2
 
-        # ── 連打技補正（例: 連撃ウーラオス3連 等）──────────────────────
-        hit_count = 3 if effect in ("triple_always_crit", "surging-strikes") else 1
+        # ── 多段ヒット補正 ────────────────────────────────────────────────
+        hits_min, hits_max = _MULTI_HIT.get(move_id, (1, 1))
+        # skill-link は 2〜5 ヒット技を常に最大ヒット
+        if attacker.ability in ("skill-link",) and hits_max > hits_min:
+            hits_min = hits_max
+        hit_count = hits_max  # 既存コードとの互換性（max を代表値として使用）
+        if hits_min == hits_max:
+            hit_count_str = f"×{hits_min}" if hits_min > 1 else ""
+        else:
+            hit_count_str = f"×{hits_min}〜{hits_max}"
 
         # ── 各種倍率チェーン ─────────────────────────────────────────────
         eff = type_effectiveness(move_type, def_types)
@@ -202,10 +230,10 @@ class DamageCalculator:
             d = _apply(d, burn_mult)
             d = _apply(d, def_item_mult)
             d = _apply(d, def_ability_mult)
-            return max(1, d) * hit_count
+            return max(1, d)
 
-        dmg_min = calc_damage(0.85)
-        dmg_max = calc_damage(1.00)
+        dmg_min = calc_damage(0.85) * hits_min
+        dmg_max = calc_damage(1.00) * hits_max
 
         defender_hp = calculate_all_stats(defender)["hp"]
         pct_min = dmg_min / defender_hp * 100
@@ -224,6 +252,7 @@ class DamageCalculator:
             type_effectiveness=eff,
             is_stab=move_type in atk_types,
             ko_chance=_ko_label(pct_min, pct_max),
+            hit_count=hit_count_str,
         )
 
     def calculate_all_moves(

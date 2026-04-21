@@ -1100,7 +1100,18 @@ class ResultTable(QTableWidget):
         super().__init__(parent)
         self.setColumnCount(len(self.HEADERS))
         self.setHorizontalHeaderLabels(self.HEADERS)
-        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        hh = self.horizontalHeader()
+        # 技名・判定はStretch、威力・タイプ相性・ダメージ・割合は固定
+        hh.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)         # 技名
+        hh.setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)           # 威力
+        hh.setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)           # タイプ相性
+        hh.setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)           # ダメージ
+        hh.setSectionResizeMode(4, QHeaderView.ResizeMode.Fixed)           # 割合
+        hh.setSectionResizeMode(5, QHeaderView.ResizeMode.Stretch)         # 判定
+        self.setColumnWidth(1, 70)
+        self.setColumnWidth(2, 75)
+        self.setColumnWidth(3, 110)
+        self.setColumnWidth(4, 150)
         self.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.setAlternatingRowColors(True)
@@ -1114,6 +1125,8 @@ class ResultTable(QTableWidget):
             self.insertRow(row)
             name = r.move_name_ja + ("◎" if r.is_stab else "")
             power_str = str(r.base_power) if r.base_power else "可変"
+            if r.hit_count:
+                power_str += " " + r.hit_count
             eff_str   = self.EFF_LABEL.get(r.type_effectiveness,
                                             str(r.type_effectiveness))
             dmg_str   = f"{r.damage_min} 〜 {r.damage_max}"

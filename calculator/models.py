@@ -80,6 +80,7 @@ class DamageResult:
     type_effectiveness: float  # 0 / 0.25 / 0.5 / 1 / 2 / 4
     is_stab: bool
     ko_chance: str             # "確定1発" / "乱数1発(x/16)" / "確定2発" / etc.
+    hit_count: str = ""        # "×2〜5" など複数回ヒット技のみ設定
 
     def summary(self) -> str:
         eff = {0: "無効", 0.25: "1/4", 0.5: "今ひとつ", 1: "等倍",
