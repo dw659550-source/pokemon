@@ -182,6 +182,7 @@ class BattleMonitor(QThread):
         self._prev_mean: np.ndarray | None = None
         self._prev_name    = ""
         self._prev_own     = ""
+        self._empty_frames = 0  # OCRが空だったフレーム数（交代検出用）
 
     def update_config(self, cfg: dict):
         self._cfg = cfg
@@ -255,7 +256,7 @@ class BattleMonitor(QThread):
                     cur_mean = region[::4, ::4].mean(axis=(0, 1))
 
                     if self._prev_mean is not None:
-                        if float(np.abs(cur_mean - self._prev_mean).max()) < 8:
+                        if float(np.abs(cur_mean - self._prev_mean).max()) < 4:
                             time.sleep(0.07)
                             continue
 
@@ -274,14 +275,22 @@ class BattleMonitor(QThread):
                     proc = _ocr_preprocess(opp_crop, _cv2, _np)
                     texts = reader.readtext(proc, detail=0)
                     text  = "".join(texts).strip()
-                    if text and text != self._prev_name:
-                        key, name_ja = match_pokemon_name(text)
-                        if key:
-                            self._prev_name = text
-                            self.opponent_changed.emit(key, name_ja)
-                            self.status_changed.emit(f"相手: {name_ja}")
-                        else:
-                            self.status_changed.emit(f"マッチなし: [{text}]")
+                    if not text:
+                        # OCRが空＝交代演出中の可能性 → 連続5フレーム空ならprev_nameをリセット
+                        self._empty_frames += 1
+                        if self._empty_frames >= 5:
+                            self._prev_name = ""
+                            self._prev_own  = ""
+                    else:
+                        self._empty_frames = 0
+                        if text != self._prev_name:
+                            key, name_ja = match_pokemon_name(text)
+                            if key:
+                                self._prev_name = text
+                                self.opponent_changed.emit(key, name_ja)
+                                self.status_changed.emit(f"相手: {name_ja}")
+                            else:
+                                self.status_changed.emit(f"マッチなし: [{text}]")
 
                     # ── 自分のポケモン OCR（領域が設定されている場合のみ）──
                     ox1 = cfg.get("own_name_x1", 0.0)
