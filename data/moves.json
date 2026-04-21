@@ -2145,16 +2145,6 @@
     "priority": 0,
     "flags": []
   },
-  "land-s-wrath": {
-    "name_ja": "だいちのはどう",
-    "type": "ground",
-    "category": "special",
-    "power": 90,
-    "accuracy": 100,
-    "pp": 10,
-    "priority": 0,
-    "flags": []
-  },
   "thunderous-kick": {
     "name_ja": "ライトニングキック",
     "type": "fighting",
