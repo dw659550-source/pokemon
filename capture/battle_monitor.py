@@ -250,14 +250,15 @@ class BattleMonitor(QThread):
 
                     # 白テキスト抽出 + 拡大でOCR精度を改善
                     import cv2 as _cv2
-                    # V チャンネルで明るいピクセル（白文字）を抽出
+                    import numpy as _np
+                    # 低彩度 & 高輝度のピクセルを白文字として抽出
                     hsv = _cv2.cvtColor(name_crop, _cv2.COLOR_BGR2HSV)
-                    v   = hsv[:, :, 2]
-                    _, proc = _cv2.threshold(v, 180, 255, _cv2.THRESH_BINARY)
+                    s, v = hsv[:, :, 1], hsv[:, :, 2]
+                    mask = ((_np.array(s) < 60) & (_np.array(v) > 150)).astype("uint8") * 255
                     # 3倍拡大
                     proc = _cv2.resize(
-                        proc,
-                        (proc.shape[1] * 3, proc.shape[0] * 3),
+                        mask,
+                        (mask.shape[1] * 3, mask.shape[0] * 3),
                         interpolation=_cv2.INTER_NEAREST,
                     )
                     # デバッグ用: 最新クロップを保存（確認後に削除してください）
