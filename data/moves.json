@@ -22,7 +22,7 @@
     "flags": []
   },
   "u-turn": {
-    "name_ja": "Uターン",
+    "name_ja": "とんぼがえり",
     "type": "bug",
     "category": "physical",
     "power": 70,
