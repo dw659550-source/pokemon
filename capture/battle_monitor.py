@@ -274,6 +274,7 @@ class BattleMonitor(QThread):
                         on4 = min(h, int(h * cfg["own_name_y2"]) + 8)
                         own_crop = frame[on2:on4, on1:on3]
                         proc2 = _ocr_preprocess_own(own_crop, _cv2)
+                        _cv2.imwrite("debug_own_crop.png", proc2)
                         texts2 = reader.readtext(proc2, detail=0)
                         text2  = "".join(texts2).strip()
                         if text2 and text2 != self._prev_own:
