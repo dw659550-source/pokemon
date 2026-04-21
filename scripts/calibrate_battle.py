@@ -85,7 +85,7 @@ def run_calibration(img_path: str, monitor: int):
     def on_key(event):
         key = event.keysym.lower()
 
-        if key == "return" and len(clicks) == 2:
+        if key == "return" and len(clicks) == 2 and getattr(root, "_phase", "") != "own":
             x1d, y1d = clicks[0]
             x2d, y2d = clicks[1]
             x1o, y1o = x1d / scale, y1d / scale
