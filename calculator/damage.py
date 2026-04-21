@@ -37,6 +37,34 @@ _MULTI_HIT: dict[str, tuple[int, int]] = {
 }
 
 
+# ── 重さ → 威力変換（けたぐり・くさむすび）──────────────────────────────────
+def _weight_power(weight_kg: float) -> int:
+    if weight_kg < 10:  return 20
+    if weight_kg < 25:  return 40
+    if weight_kg < 50:  return 60
+    if weight_kg < 100: return 80
+    if weight_kg < 200: return 100
+    return 120
+
+
+# ── ウェザーボール天気タイプ変換 ─────────────────────────────────────────────
+_WEATHER_BALL_TYPE = {
+    "sun":  "fire",
+    "rain": "water",
+    "sand": "rock",
+    "hail": "ice",
+    "snow": "ice",
+}
+
+# ── テレインパルスタイプ変換 ──────────────────────────────────────────────────
+_TERRAIN_PULSE_TYPE = {
+    "electric": "electric",
+    "grassy":   "grass",
+    "misty":    "fairy",
+    "psychic":  "psychic",
+}
+
+
 # ── ユーティリティ ──────────────────────────────────────────────────────────
 
 def type_effectiveness(move_type: str, defender_types: list[str]) -> float:
@@ -104,8 +132,19 @@ class DamageCalculator:
             move_id, move, attacker, defender, atk_stats, def_stats,
             attacker_state, defender_state
         )
-        if base_power == 0:
+        if base_power is None or base_power == 0:
             return None
+
+        # ── タイプ変化技の処理 ───────────────────────────────────────────
+        if effect == "weather_ball":
+            wb = _WEATHER_BALL_TYPE.get(attacker_state.weather)
+            if wb:
+                move_type = wb
+                base_power = 100
+        elif effect == "terrain_pulse":
+            tp = _TERRAIN_PULSE_TYPE.get(attacker_state.terrain)
+            if tp:
+                move_type = tp
 
         # ── 攻撃・防御ステータス選択 ────────────────────────────────────
         if effect == "body_press":
@@ -279,28 +318,44 @@ class DamageCalculator:
         power = move.get("power")
         effect = move.get("effect")
 
-        if power is not None:
+        if power is not None and effect not in ("hex", "eruption", "electro_ball",
+                                                 "terrain_pulse", "always_crit",
+                                                 "triple_always_crit"):
             return power
 
-        # 可変威力技
-        if effect == "grass_knot":
-            # くさむすび: 相手の重さで決まる（Phase1では固定60で近似）
-            return 60
+        if effect in ("grass_knot", "low_kick"):
+            return _weight_power(get_pokemon_data(defender.species).get("weight", 50.0))
         if effect == "gyro_ball":
             p = math.floor(25 * def_stats["speed"] / max(1, atk_stats["speed"]))
             return min(150, max(1, p))
         if effect == "acrobatics":
-            # 持ち物なしなら2倍
             return 110 if attacker.item == "none" else 55
         if effect == "facade":
             return 140 if atk_state.burned or atk_state.poisoned or atk_state.paralyzed else 70
         if effect == "knock_off":
-            # 持ち物あり相手には1.5倍
-            if defender.item != "none":
-                return math.floor(65 * 1.5)
-            return 65
+            return math.floor(65 * 1.5) if defender.item != "none" else 65
+        if effect == "eruption":
+            return max(1, math.floor(150 * atk_state.hp_ratio))
+        if effect == "hex":
+            abnormal = def_state.burned or def_state.poisoned or def_state.paralyzed
+            return 130 if abnormal else 65
+        if effect == "electro_ball":
+            ratio = atk_stats["speed"] / max(1, def_stats["speed"])
+            if ratio >= 4: return 150
+            if ratio >= 3: return 120
+            if ratio >= 2: return 80
+            if ratio >= 1: return 60
+            return 40
+        if effect == "terrain_pulse":
+            terrain = atk_state.terrain
+            return 100 if terrain != "none" else 50
+        if effect in ("always_crit", "triple_always_crit", "psyshock", "freeze_dry",
+                      "body_press"):
+            return power if power is not None else 60
+        if effect == "half_hp":
+            return None  # 相手の残りHPの半分（呼び出し元で0を返す）
 
-        return 60  # フォールバック
+        return power if power is not None else 60  # フォールバック
 
     def _attacker_item_mult(self, item: str, species: str,
                             move_type: str, category: str,

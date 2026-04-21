@@ -1,120 +1,2344 @@
 {
-  "close-combat":   {"name_ja":"インファイト",    "type":"fighting","category":"physical","power":120,"accuracy":100,"pp":5, "priority":0,"flags":["contact"]},
-  "earthquake":     {"name_ja":"じしん",          "type":"ground",  "category":"physical","power":100,"accuracy":100,"pp":10,"priority":0,"flags":[]},
-  "u-turn":         {"name_ja":"Uターン",         "type":"bug",     "category":"physical","power":70, "accuracy":100,"pp":20,"priority":0,"flags":["contact"]},
-  "knock-off":      {"name_ja":"はたきおとす",    "type":"dark",    "category":"physical","power":65, "accuracy":100,"pp":20,"priority":0,"flags":["contact"],"effect":"knock_off"},
-  "ice-punch":      {"name_ja":"れいとうパンチ",  "type":"ice",     "category":"physical","power":75, "accuracy":100,"pp":15,"priority":0,"flags":["contact","punch"]},
-  "thunder-punch":  {"name_ja":"かみなりパンチ",  "type":"electric","category":"physical","power":75, "accuracy":100,"pp":15,"priority":0,"flags":["contact","punch"]},
-  "fire-punch":     {"name_ja":"ほのおのパンチ",  "type":"fire",    "category":"physical","power":75, "accuracy":100,"pp":15,"priority":0,"flags":["contact","punch"]},
-  "poison-jab":     {"name_ja":"どくづき",        "type":"poison",  "category":"physical","power":80, "accuracy":100,"pp":20,"priority":0,"flags":["contact"]},
-  "stone-edge":     {"name_ja":"ストーンエッジ",  "type":"rock",    "category":"physical","power":100,"accuracy":80, "pp":5, "priority":0,"flags":[]},
-  "iron-head":      {"name_ja":"アイアンヘッド",  "type":"steel",   "category":"physical","power":80, "accuracy":100,"pp":15,"priority":0,"flags":["contact"]},
-  "play-rough":     {"name_ja":"じゃれつく",      "type":"fairy",   "category":"physical","power":90, "accuracy":90, "pp":10,"priority":0,"flags":["contact"]},
-  "waterfall":      {"name_ja":"たきのぼり",      "type":"water",   "category":"physical","power":80, "accuracy":100,"pp":15,"priority":0,"flags":["contact"]},
-  "crunch":         {"name_ja":"かみくだく",      "type":"dark",    "category":"physical","power":80, "accuracy":100,"pp":15,"priority":0,"flags":["contact"]},
-  "facade":         {"name_ja":"からげんき",      "type":"normal",  "category":"physical","power":70, "accuracy":100,"pp":20,"priority":0,"flags":["contact"],"effect":"facade"},
-  "high-horsepower":{"name_ja":"じだんだ",        "type":"ground",  "category":"physical","power":95, "accuracy":95, "pp":10,"priority":0,"flags":["contact"]},
-  "zen-headbutt":   {"name_ja":"しねんのずつき",  "type":"psychic", "category":"physical","power":80, "accuracy":90, "pp":15,"priority":0,"flags":["contact"]},
-  "bullet-punch":   {"name_ja":"バレットパンチ",  "type":"steel",   "category":"physical","power":40, "accuracy":100,"pp":30,"priority":1,"flags":["contact","punch"]},
-  "ice-shard":      {"name_ja":"こおりのつぶて",  "type":"ice",     "category":"physical","power":40, "accuracy":100,"pp":30,"priority":1,"flags":[]},
-  "aqua-jet":       {"name_ja":"アクアジェット",  "type":"water",   "category":"physical","power":40, "accuracy":100,"pp":20,"priority":1,"flags":["contact"]},
-  "shadow-sneak":   {"name_ja":"かげうち",        "type":"ghost",   "category":"physical","power":40, "accuracy":100,"pp":30,"priority":1,"flags":["contact"]},
-  "mach-punch":     {"name_ja":"マッハパンチ",    "type":"fighting","category":"physical","power":40, "accuracy":100,"pp":30,"priority":1,"flags":["contact","punch"]},
-  "sucker-punch":   {"name_ja":"ふいうち",        "type":"dark",    "category":"physical","power":70, "accuracy":100,"pp":5, "priority":1,"flags":["contact"]},
-  "extreme-speed":  {"name_ja":"しんそく",        "type":"normal",  "category":"physical","power":80, "accuracy":100,"pp":5, "priority":2,"flags":["contact"]},
-  "fake-out":       {"name_ja":"ねこだまし",      "type":"normal",  "category":"physical","power":40, "accuracy":100,"pp":10,"priority":3,"flags":["contact"]},
-  "flare-blitz":    {"name_ja":"フレアドライブ",  "type":"fire",    "category":"physical","power":120,"accuracy":100,"pp":15,"priority":0,"flags":["contact","recoil"]},
-  "brave-bird":     {"name_ja":"ブレイブバード",  "type":"flying",  "category":"physical","power":120,"accuracy":100,"pp":15,"priority":0,"flags":["contact","recoil"]},
-  "wood-hammer":    {"name_ja":"ウッドハンマー",  "type":"grass",   "category":"physical","power":120,"accuracy":100,"pp":15,"priority":0,"flags":["contact","recoil"]},
-  "double-edge":    {"name_ja":"すてみタックル",  "type":"normal",  "category":"physical","power":120,"accuracy":100,"pp":15,"priority":0,"flags":["contact","recoil"]},
-  "outrage":        {"name_ja":"げきりん",        "type":"dragon",  "category":"physical","power":120,"accuracy":100,"pp":10,"priority":0,"flags":["contact"]},
-  "gunk-shot":      {"name_ja":"ヘドロばくだん",  "type":"poison",  "category":"physical","power":120,"accuracy":80, "pp":5, "priority":0,"flags":[]},
-  "superpower":     {"name_ja":"ばかぢから",      "type":"fighting","category":"physical","power":120,"accuracy":100,"pp":5, "priority":0,"flags":["contact"]},
-  "head-smash":     {"name_ja":"フレアドライブ",  "type":"rock",    "category":"physical","power":150,"accuracy":80, "pp":5, "priority":0,"flags":["contact","recoil"]},
-  "wild-charge":    {"name_ja":"ワイルドボルト",  "type":"electric","category":"physical","power":90, "accuracy":100,"pp":15,"priority":0,"flags":["contact","recoil"]},
-  "body-press":     {"name_ja":"ボディプレス",    "type":"fighting","category":"physical","power":80, "accuracy":100,"pp":10,"priority":0,"flags":["contact"],"effect":"body_press"},
-  "sacred-sword":   {"name_ja":"せいなるつるぎ",  "type":"fighting","category":"physical","power":90, "accuracy":100,"pp":15,"priority":0,"flags":["contact"]},
-  "wicked-blow":    {"name_ja":"あんこくきょうだ","type":"dark",    "category":"physical","power":80, "accuracy":100,"pp":5, "priority":0,"flags":["contact","punch"],"effect":"always_crit"},
-  "surging-strikes":{"name_ja":"すいりゅうれんだ","type":"water",   "category":"physical","power":25, "accuracy":100,"pp":5, "priority":0,"flags":["contact","punch"],"effect":"triple_always_crit"},
-  "liquidation":    {"name_ja":"アクアブレイク",  "type":"water",   "category":"physical","power":85, "accuracy":100,"pp":10,"priority":0,"flags":["contact"]},
-  "dragon-claw":    {"name_ja":"ドラゴンクロー",  "type":"dragon",  "category":"physical","power":80, "accuracy":100,"pp":15,"priority":0,"flags":["contact"]},
-  "leaf-blade":     {"name_ja":"リーフブレード",  "type":"grass",   "category":"physical","power":90, "accuracy":100,"pp":15,"priority":0,"flags":["contact"]},
-  "shadow-claw":    {"name_ja":"シャドークロー",  "type":"ghost",   "category":"physical","power":70, "accuracy":100,"pp":15,"priority":0,"flags":["contact"]},
-  "leech-life":     {"name_ja":"きゅうけつ",      "type":"bug",     "category":"physical","power":80, "accuracy":100,"pp":10,"priority":0,"flags":["contact"]},
-  "x-scissor":      {"name_ja":"シザークロス",    "type":"bug",     "category":"physical","power":80, "accuracy":100,"pp":15,"priority":0,"flags":["contact"]},
-  "drain-punch":    {"name_ja":"ドレインパンチ",  "type":"fighting","category":"physical","power":75, "accuracy":100,"pp":10,"priority":0,"flags":["contact","punch"]},
-  "rock-slide":     {"name_ja":"いわなだれ",      "type":"rock",    "category":"physical","power":75, "accuracy":90, "pp":10,"priority":0,"flags":[]},
-  "acrobatics":     {"name_ja":"アクロバット",    "type":"flying",  "category":"physical","power":55, "accuracy":100,"pp":15,"priority":0,"flags":["contact"],"effect":"acrobatics"},
-  "poltergeist":    {"name_ja":"ポルターガイスト","type":"ghost",   "category":"physical","power":110,"accuracy":90, "pp":5, "priority":0,"flags":[]},
-  "first-impression":{"name_ja":"インファイト",   "type":"bug",     "category":"physical","power":90, "accuracy":100,"pp":10,"priority":2,"flags":["contact"]},
-  "wave-crash":     {"name_ja":"ウェーブタックル","type":"water",   "category":"physical","power":120,"accuracy":100,"pp":10,"priority":0,"flags":["contact","recoil"]},
-  "jet-punch":      {"name_ja":"マッハパンチ",    "type":"water",   "category":"physical","power":60, "accuracy":100,"pp":15,"priority":1,"flags":["contact","punch"]},
-  "glacial-lance":  {"name_ja":"こおりのやり",    "type":"ice",     "category":"physical","power":120,"accuracy":100,"pp":5, "priority":0,"flags":[]},
-  "thunderbolt":    {"name_ja":"10まんボルト",    "type":"electric","category":"special", "power":90, "accuracy":100,"pp":15,"priority":0,"flags":[]},
-  "thunder":        {"name_ja":"かみなり",        "type":"electric","category":"special", "power":110,"accuracy":70, "pp":10,"priority":0,"flags":[]},
-  "volt-switch":    {"name_ja":"ボルトチェンジ",  "type":"electric","category":"special", "power":70, "accuracy":100,"pp":20,"priority":0,"flags":[]},
-  "flamethrower":   {"name_ja":"かえんほうしゃ",  "type":"fire",    "category":"special", "power":90, "accuracy":100,"pp":15,"priority":0,"flags":[]},
-  "fire-blast":     {"name_ja":"だいもんじ",      "type":"fire",    "category":"special", "power":110,"accuracy":85, "pp":5, "priority":0,"flags":[]},
-  "heat-wave":      {"name_ja":"ねっぷう",        "type":"fire",    "category":"special", "power":95, "accuracy":90, "pp":10,"priority":0,"flags":[]},
-  "overheat":       {"name_ja":"オーバーヒート",  "type":"fire",    "category":"special", "power":130,"accuracy":90, "pp":5, "priority":0,"flags":[]},
-  "mystical-fire":  {"name_ja":"マジカルフレイム","type":"fire",    "category":"special", "power":75, "accuracy":100,"pp":10,"priority":0,"flags":[]},
-  "surf":           {"name_ja":"なみのり",        "type":"water",   "category":"special", "power":90, "accuracy":100,"pp":15,"priority":0,"flags":[]},
-  "hydro-pump":     {"name_ja":"ハイドロポンプ",  "type":"water",   "category":"special", "power":110,"accuracy":80, "pp":5, "priority":0,"flags":[]},
-  "scald":          {"name_ja":"ねっとう",        "type":"water",   "category":"special", "power":80, "accuracy":100,"pp":15,"priority":0,"flags":[]},
-  "origin-pulse":   {"name_ja":"こんげんのはどう","type":"water",   "category":"special", "power":110,"accuracy":85, "pp":10,"priority":0,"flags":[]},
-  "ice-beam":       {"name_ja":"れいとうビーム",  "type":"ice",     "category":"special", "power":90, "accuracy":100,"pp":10,"priority":0,"flags":[]},
-  "blizzard":       {"name_ja":"ふぶき",          "type":"ice",     "category":"special", "power":110,"accuracy":70, "pp":5, "priority":0,"flags":[]},
-  "freeze-dry":     {"name_ja":"フリーズドライ",  "type":"ice",     "category":"special", "power":70, "accuracy":100,"pp":20,"priority":0,"flags":[],"effect":"freeze_dry"},
-  "energy-ball":    {"name_ja":"エナジーボール",  "type":"grass",   "category":"special", "power":90, "accuracy":100,"pp":10,"priority":0,"flags":[]},
-  "leaf-storm":     {"name_ja":"リーフストーム",  "type":"grass",   "category":"special", "power":130,"accuracy":90, "pp":5, "priority":0,"flags":[]},
-  "giga-drain":     {"name_ja":"ギガドレイン",    "type":"grass",   "category":"special", "power":75, "accuracy":100,"pp":10,"priority":0,"flags":[]},
-  "solar-beam":     {"name_ja":"ソーラービーム",  "type":"grass",   "category":"special", "power":120,"accuracy":100,"pp":10,"priority":0,"flags":[]},
-  "psychic":        {"name_ja":"サイコキネシス",  "type":"psychic", "category":"special", "power":90, "accuracy":100,"pp":10,"priority":0,"flags":[]},
-  "psyshock":       {"name_ja":"サイコショック",  "type":"psychic", "category":"special", "power":80, "accuracy":100,"pp":10,"priority":0,"flags":[],"effect":"psyshock"},
-  "psystrike":      {"name_ja":"サイコブレイク",  "type":"psychic", "category":"special", "power":100,"accuracy":100,"pp":10,"priority":0,"flags":[],"effect":"psyshock"},
-  "expanding-force":{"name_ja":"ワイドフォース",  "type":"psychic", "category":"special", "power":80, "accuracy":100,"pp":10,"priority":0,"flags":[]},
-  "moonblast":      {"name_ja":"ムーンフォース",  "type":"fairy",   "category":"special", "power":95, "accuracy":100,"pp":15,"priority":0,"flags":[]},
-  "dazzling-gleam": {"name_ja":"マジカルシャイン","type":"fairy",   "category":"special", "power":80, "accuracy":100,"pp":10,"priority":0,"flags":[]},
-  "shadow-ball":    {"name_ja":"シャドーボール",  "type":"ghost",   "category":"special", "power":80, "accuracy":100,"pp":15,"priority":0,"flags":[]},
-  "moongeist-beam": {"name_ja":"ムーンライトブラスター","type":"ghost","category":"special","power":100,"accuracy":100,"pp":5,"priority":0,"flags":[]},
-  "hex":            {"name_ja":"たたりめ",        "type":"ghost",   "category":"special", "power":65, "accuracy":100,"pp":10,"priority":0,"flags":[],"effect":"hex"},
-  "dark-pulse":     {"name_ja":"あくのはどう",    "type":"dark",    "category":"special", "power":80, "accuracy":100,"pp":15,"priority":0,"flags":["pulse"]},
-  "fiery-wrath":    {"name_ja":"せいなるほのお",  "type":"dark",    "category":"special", "power":90, "accuracy":100,"pp":10,"priority":0,"flags":[]},
-  "aura-sphere":    {"name_ja":"はどうだん",      "type":"fighting","category":"special", "power":80, "accuracy":null,"pp":20,"priority":0,"flags":["pulse"]},
-  "focus-blast":    {"name_ja":"きあいだま",      "type":"fighting","category":"special", "power":120,"accuracy":70, "pp":5, "priority":0,"flags":["bullet"]},
-  "vacuum-wave":    {"name_ja":"しんくうは",      "type":"fighting","category":"special", "power":40, "accuracy":100,"pp":30,"priority":1,"flags":[]},
-  "earth-power":    {"name_ja":"だいちのちから",  "type":"ground",  "category":"special", "power":90, "accuracy":100,"pp":10,"priority":0,"flags":[]},
-  "dragon-pulse":   {"name_ja":"りゅうのはどう",  "type":"dragon",  "category":"special", "power":85, "accuracy":100,"pp":10,"priority":0,"flags":["pulse"]},
-  "draco-meteor":   {"name_ja":"りゅうせいぐん",  "type":"dragon",  "category":"special", "power":130,"accuracy":90, "pp":5, "priority":0,"flags":[]},
-  "spacial-rend":   {"name_ja":"やぶれたせかい",  "type":"dragon",  "category":"special", "power":100,"accuracy":95, "pp":5, "priority":0,"flags":[]},
-  "hurricane":      {"name_ja":"ぼうふう",        "type":"flying",  "category":"special", "power":110,"accuracy":70, "pp":10,"priority":0,"flags":[]},
-  "air-slash":      {"name_ja":"エアスラッシュ",  "type":"flying",  "category":"special", "power":75, "accuracy":95, "pp":15,"priority":0,"flags":[]},
-  "bug-buzz":       {"name_ja":"むしのさざめき",  "type":"bug",     "category":"special", "power":90, "accuracy":100,"pp":10,"priority":0,"flags":["sound"]},
-  "flash-cannon":   {"name_ja":"ラスターカノン",  "type":"steel",   "category":"special", "power":80, "accuracy":100,"pp":10,"priority":0,"flags":[]},
-  "power-gem":      {"name_ja":"パワージェム",    "type":"rock",    "category":"special", "power":80, "accuracy":100,"pp":20,"priority":0,"flags":[]},
-  "sludge-bomb":    {"name_ja":"ヘドロばくだん",  "type":"poison",  "category":"special", "power":90, "accuracy":100,"pp":10,"priority":0,"flags":["bullet"]},
-  "sludge-wave":    {"name_ja":"ヘドロウェーブ",  "type":"poison",  "category":"special", "power":95, "accuracy":100,"pp":10,"priority":0,"flags":[]},
-  "grass-knot":     {"name_ja":"くさむすび",      "type":"grass",   "category":"special", "power":null,"accuracy":100,"pp":20,"priority":0,"flags":["contact"],"effect":"grass_knot"},
-  "gyro-ball":      {"name_ja":"ジャイロボール",  "type":"steel",   "category":"physical","power":null,"accuracy":100,"pp":5, "priority":0,"flags":["contact"],"effect":"gyro_ball"},
-  "future-sight":   {"name_ja":"みらいよち",      "type":"psychic", "category":"special", "power":120,"accuracy":100,"pp":10,"priority":0,"flags":[]},
-  "electro-drift":  {"name_ja":"エレクトロドリフト","type":"electric","category":"special","power":100,"accuracy":100,"pp":5,"priority":0,"flags":[]},
-  "astral-barrage": {"name_ja":"アストラルビット","type":"ghost",   "category":"special", "power":120,"accuracy":100,"pp":5, "priority":0,"flags":[]},
-  "precipice-blades":{"name_ja":"だんがいのつるぎ","type":"ground", "category":"physical","power":120,"accuracy":85, "pp":10,"priority":0,"flags":[]},
-  "protect":        {"name_ja":"まもる",          "type":"normal",  "category":"status",  "power":null,"accuracy":null,"pp":10,"priority":4,"flags":[]},
-  "substitute":     {"name_ja":"みがわり",        "type":"normal",  "category":"status",  "power":null,"accuracy":null,"pp":10,"priority":0,"flags":[]},
-  "swords-dance":   {"name_ja":"つるぎのまい",    "type":"normal",  "category":"status",  "power":null,"accuracy":null,"pp":20,"priority":0,"flags":[]},
-  "calm-mind":      {"name_ja":"めいそう",        "type":"psychic", "category":"status",  "power":null,"accuracy":null,"pp":20,"priority":0,"flags":[]},
-  "nasty-plot":     {"name_ja":"わるだくみ",      "type":"dark",    "category":"status",  "power":null,"accuracy":null,"pp":20,"priority":0,"flags":[]},
-  "dragon-dance":   {"name_ja":"りゅうのまい",    "type":"dragon",  "category":"status",  "power":null,"accuracy":null,"pp":20,"priority":0,"flags":[]},
-  "quiver-dance":   {"name_ja":"ちょうのまい",    "type":"bug",     "category":"status",  "power":null,"accuracy":null,"pp":20,"priority":0,"flags":[]},
-  "shell-smash":    {"name_ja":"からをやぶる",    "type":"normal",  "category":"status",  "power":null,"accuracy":null,"pp":15,"priority":0,"flags":[]},
-  "roost":          {"name_ja":"はねやすめ",      "type":"flying",  "category":"status",  "power":null,"accuracy":null,"pp":10,"priority":0,"flags":[]},
-  "recover":        {"name_ja":"じこさいせい",    "type":"normal",  "category":"status",  "power":null,"accuracy":null,"pp":10,"priority":0,"flags":[]},
-  "stealth-rock":   {"name_ja":"ステルスロック",  "type":"rock",    "category":"status",  "power":null,"accuracy":null,"pp":20,"priority":0,"flags":[]},
-  "spikes":         {"name_ja":"まきびし",        "type":"ground",  "category":"status",  "power":null,"accuracy":null,"pp":20,"priority":0,"flags":[]},
-  "toxic-spikes":   {"name_ja":"どくびし",        "type":"poison",  "category":"status",  "power":null,"accuracy":null,"pp":20,"priority":0,"flags":[]},
-  "taunt":          {"name_ja":"ちょうはつ",      "type":"dark",    "category":"status",  "power":null,"accuracy":100,"pp":20,"priority":0,"flags":[]},
-  "will-o-wisp":    {"name_ja":"おにび",          "type":"fire",    "category":"status",  "power":null,"accuracy":85, "pp":15,"priority":0,"flags":[]},
-  "thunder-wave":   {"name_ja":"でんじは",        "type":"electric","category":"status",  "power":null,"accuracy":90, "pp":20,"priority":0,"flags":[]},
-  "toxic":          {"name_ja":"どく",            "type":"poison",  "category":"status",  "power":null,"accuracy":90, "pp":10,"priority":0,"flags":[]}
+  "close-combat": {
+    "name_ja": "インファイト",
+    "type": "fighting",
+    "category": "physical",
+    "power": 120,
+    "accuracy": 100,
+    "pp": 5,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "earthquake": {
+    "name_ja": "じしん",
+    "type": "ground",
+    "category": "physical",
+    "power": 100,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "u-turn": {
+    "name_ja": "Uターン",
+    "type": "bug",
+    "category": "physical",
+    "power": 70,
+    "accuracy": 100,
+    "pp": 20,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "knock-off": {
+    "name_ja": "はたきおとす",
+    "type": "dark",
+    "category": "physical",
+    "power": 65,
+    "accuracy": 100,
+    "pp": 20,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ],
+    "effect": "knock_off"
+  },
+  "ice-punch": {
+    "name_ja": "れいとうパンチ",
+    "type": "ice",
+    "category": "physical",
+    "power": 75,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": [
+      "contact",
+      "punch"
+    ]
+  },
+  "thunder-punch": {
+    "name_ja": "かみなりパンチ",
+    "type": "electric",
+    "category": "physical",
+    "power": 75,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": [
+      "contact",
+      "punch"
+    ]
+  },
+  "fire-punch": {
+    "name_ja": "ほのおのパンチ",
+    "type": "fire",
+    "category": "physical",
+    "power": 75,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": [
+      "contact",
+      "punch"
+    ]
+  },
+  "poison-jab": {
+    "name_ja": "どくづき",
+    "type": "poison",
+    "category": "physical",
+    "power": 80,
+    "accuracy": 100,
+    "pp": 20,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "stone-edge": {
+    "name_ja": "ストーンエッジ",
+    "type": "rock",
+    "category": "physical",
+    "power": 100,
+    "accuracy": 80,
+    "pp": 5,
+    "priority": 0,
+    "flags": []
+  },
+  "iron-head": {
+    "name_ja": "アイアンヘッド",
+    "type": "steel",
+    "category": "physical",
+    "power": 80,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "play-rough": {
+    "name_ja": "じゃれつく",
+    "type": "fairy",
+    "category": "physical",
+    "power": 90,
+    "accuracy": 90,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "waterfall": {
+    "name_ja": "たきのぼり",
+    "type": "water",
+    "category": "physical",
+    "power": 80,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "crunch": {
+    "name_ja": "かみくだく",
+    "type": "dark",
+    "category": "physical",
+    "power": 80,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "facade": {
+    "name_ja": "からげんき",
+    "type": "normal",
+    "category": "physical",
+    "power": 70,
+    "accuracy": 100,
+    "pp": 20,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ],
+    "effect": "facade"
+  },
+  "high-horsepower": {
+    "name_ja": "じだんだ",
+    "type": "ground",
+    "category": "physical",
+    "power": 95,
+    "accuracy": 95,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "zen-headbutt": {
+    "name_ja": "しねんのずつき",
+    "type": "psychic",
+    "category": "physical",
+    "power": 80,
+    "accuracy": 90,
+    "pp": 15,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "bullet-punch": {
+    "name_ja": "バレットパンチ",
+    "type": "steel",
+    "category": "physical",
+    "power": 40,
+    "accuracy": 100,
+    "pp": 30,
+    "priority": 1,
+    "flags": [
+      "contact",
+      "punch"
+    ]
+  },
+  "ice-shard": {
+    "name_ja": "こおりのつぶて",
+    "type": "ice",
+    "category": "physical",
+    "power": 40,
+    "accuracy": 100,
+    "pp": 30,
+    "priority": 1,
+    "flags": []
+  },
+  "aqua-jet": {
+    "name_ja": "アクアジェット",
+    "type": "water",
+    "category": "physical",
+    "power": 40,
+    "accuracy": 100,
+    "pp": 20,
+    "priority": 1,
+    "flags": [
+      "contact"
+    ]
+  },
+  "shadow-sneak": {
+    "name_ja": "かげうち",
+    "type": "ghost",
+    "category": "physical",
+    "power": 40,
+    "accuracy": 100,
+    "pp": 30,
+    "priority": 1,
+    "flags": [
+      "contact"
+    ]
+  },
+  "mach-punch": {
+    "name_ja": "マッハパンチ",
+    "type": "fighting",
+    "category": "physical",
+    "power": 40,
+    "accuracy": 100,
+    "pp": 30,
+    "priority": 1,
+    "flags": [
+      "contact",
+      "punch"
+    ]
+  },
+  "sucker-punch": {
+    "name_ja": "ふいうち",
+    "type": "dark",
+    "category": "physical",
+    "power": 70,
+    "accuracy": 100,
+    "pp": 5,
+    "priority": 1,
+    "flags": [
+      "contact"
+    ]
+  },
+  "extreme-speed": {
+    "name_ja": "しんそく",
+    "type": "normal",
+    "category": "physical",
+    "power": 80,
+    "accuracy": 100,
+    "pp": 5,
+    "priority": 2,
+    "flags": [
+      "contact"
+    ]
+  },
+  "fake-out": {
+    "name_ja": "ねこだまし",
+    "type": "normal",
+    "category": "physical",
+    "power": 40,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 3,
+    "flags": [
+      "contact"
+    ]
+  },
+  "flare-blitz": {
+    "name_ja": "フレアドライブ",
+    "type": "fire",
+    "category": "physical",
+    "power": 120,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": [
+      "contact",
+      "recoil"
+    ]
+  },
+  "brave-bird": {
+    "name_ja": "ブレイブバード",
+    "type": "flying",
+    "category": "physical",
+    "power": 120,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": [
+      "contact",
+      "recoil"
+    ]
+  },
+  "wood-hammer": {
+    "name_ja": "ウッドハンマー",
+    "type": "grass",
+    "category": "physical",
+    "power": 120,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": [
+      "contact",
+      "recoil"
+    ]
+  },
+  "double-edge": {
+    "name_ja": "すてみタックル",
+    "type": "normal",
+    "category": "physical",
+    "power": 120,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": [
+      "contact",
+      "recoil"
+    ]
+  },
+  "outrage": {
+    "name_ja": "げきりん",
+    "type": "dragon",
+    "category": "physical",
+    "power": 120,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "gunk-shot": {
+    "name_ja": "ヘドロばくだん",
+    "type": "poison",
+    "category": "physical",
+    "power": 120,
+    "accuracy": 80,
+    "pp": 5,
+    "priority": 0,
+    "flags": []
+  },
+  "superpower": {
+    "name_ja": "ばかぢから",
+    "type": "fighting",
+    "category": "physical",
+    "power": 120,
+    "accuracy": 100,
+    "pp": 5,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "head-smash": {
+    "name_ja": "フレアドライブ",
+    "type": "rock",
+    "category": "physical",
+    "power": 150,
+    "accuracy": 80,
+    "pp": 5,
+    "priority": 0,
+    "flags": [
+      "contact",
+      "recoil"
+    ]
+  },
+  "wild-charge": {
+    "name_ja": "ワイルドボルト",
+    "type": "electric",
+    "category": "physical",
+    "power": 90,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": [
+      "contact",
+      "recoil"
+    ]
+  },
+  "body-press": {
+    "name_ja": "ボディプレス",
+    "type": "fighting",
+    "category": "physical",
+    "power": 80,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ],
+    "effect": "body_press"
+  },
+  "sacred-sword": {
+    "name_ja": "せいなるつるぎ",
+    "type": "fighting",
+    "category": "physical",
+    "power": 90,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "wicked-blow": {
+    "name_ja": "あんこくきょうだ",
+    "type": "dark",
+    "category": "physical",
+    "power": 80,
+    "accuracy": 100,
+    "pp": 5,
+    "priority": 0,
+    "flags": [
+      "contact",
+      "punch"
+    ],
+    "effect": "always_crit"
+  },
+  "surging-strikes": {
+    "name_ja": "すいりゅうれんだ",
+    "type": "water",
+    "category": "physical",
+    "power": 25,
+    "accuracy": 100,
+    "pp": 5,
+    "priority": 0,
+    "flags": [
+      "contact",
+      "punch"
+    ],
+    "effect": "triple_always_crit"
+  },
+  "liquidation": {
+    "name_ja": "アクアブレイク",
+    "type": "water",
+    "category": "physical",
+    "power": 85,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "dragon-claw": {
+    "name_ja": "ドラゴンクロー",
+    "type": "dragon",
+    "category": "physical",
+    "power": 80,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "leaf-blade": {
+    "name_ja": "リーフブレード",
+    "type": "grass",
+    "category": "physical",
+    "power": 90,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "shadow-claw": {
+    "name_ja": "シャドークロー",
+    "type": "ghost",
+    "category": "physical",
+    "power": 70,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "leech-life": {
+    "name_ja": "きゅうけつ",
+    "type": "bug",
+    "category": "physical",
+    "power": 80,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "x-scissor": {
+    "name_ja": "シザークロス",
+    "type": "bug",
+    "category": "physical",
+    "power": 80,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "drain-punch": {
+    "name_ja": "ドレインパンチ",
+    "type": "fighting",
+    "category": "physical",
+    "power": 75,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "contact",
+      "punch"
+    ]
+  },
+  "rock-slide": {
+    "name_ja": "いわなだれ",
+    "type": "rock",
+    "category": "physical",
+    "power": 75,
+    "accuracy": 90,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "acrobatics": {
+    "name_ja": "アクロバット",
+    "type": "flying",
+    "category": "physical",
+    "power": 55,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ],
+    "effect": "acrobatics"
+  },
+  "poltergeist": {
+    "name_ja": "ポルターガイスト",
+    "type": "ghost",
+    "category": "physical",
+    "power": 110,
+    "accuracy": 90,
+    "pp": 5,
+    "priority": 0,
+    "flags": []
+  },
+  "first-impression": {
+    "name_ja": "インファイト",
+    "type": "bug",
+    "category": "physical",
+    "power": 90,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 2,
+    "flags": [
+      "contact"
+    ]
+  },
+  "wave-crash": {
+    "name_ja": "ウェーブタックル",
+    "type": "water",
+    "category": "physical",
+    "power": 120,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "contact",
+      "recoil"
+    ]
+  },
+  "jet-punch": {
+    "name_ja": "マッハパンチ",
+    "type": "water",
+    "category": "physical",
+    "power": 60,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 1,
+    "flags": [
+      "contact",
+      "punch"
+    ]
+  },
+  "glacial-lance": {
+    "name_ja": "こおりのやり",
+    "type": "ice",
+    "category": "physical",
+    "power": 120,
+    "accuracy": 100,
+    "pp": 5,
+    "priority": 0,
+    "flags": []
+  },
+  "thunderbolt": {
+    "name_ja": "10まんボルト",
+    "type": "electric",
+    "category": "special",
+    "power": 90,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": []
+  },
+  "thunder": {
+    "name_ja": "かみなり",
+    "type": "electric",
+    "category": "special",
+    "power": 110,
+    "accuracy": 70,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "volt-switch": {
+    "name_ja": "ボルトチェンジ",
+    "type": "electric",
+    "category": "special",
+    "power": 70,
+    "accuracy": 100,
+    "pp": 20,
+    "priority": 0,
+    "flags": []
+  },
+  "flamethrower": {
+    "name_ja": "かえんほうしゃ",
+    "type": "fire",
+    "category": "special",
+    "power": 90,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": []
+  },
+  "fire-blast": {
+    "name_ja": "だいもんじ",
+    "type": "fire",
+    "category": "special",
+    "power": 110,
+    "accuracy": 85,
+    "pp": 5,
+    "priority": 0,
+    "flags": []
+  },
+  "heat-wave": {
+    "name_ja": "ねっぷう",
+    "type": "fire",
+    "category": "special",
+    "power": 95,
+    "accuracy": 90,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "overheat": {
+    "name_ja": "オーバーヒート",
+    "type": "fire",
+    "category": "special",
+    "power": 130,
+    "accuracy": 90,
+    "pp": 5,
+    "priority": 0,
+    "flags": []
+  },
+  "mystical-fire": {
+    "name_ja": "マジカルフレイム",
+    "type": "fire",
+    "category": "special",
+    "power": 75,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "surf": {
+    "name_ja": "なみのり",
+    "type": "water",
+    "category": "special",
+    "power": 90,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": []
+  },
+  "hydro-pump": {
+    "name_ja": "ハイドロポンプ",
+    "type": "water",
+    "category": "special",
+    "power": 110,
+    "accuracy": 80,
+    "pp": 5,
+    "priority": 0,
+    "flags": []
+  },
+  "scald": {
+    "name_ja": "ねっとう",
+    "type": "water",
+    "category": "special",
+    "power": 80,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": []
+  },
+  "origin-pulse": {
+    "name_ja": "こんげんのはどう",
+    "type": "water",
+    "category": "special",
+    "power": 110,
+    "accuracy": 85,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "pulse"
+    ]
+  },
+  "ice-beam": {
+    "name_ja": "れいとうビーム",
+    "type": "ice",
+    "category": "special",
+    "power": 90,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "blizzard": {
+    "name_ja": "ふぶき",
+    "type": "ice",
+    "category": "special",
+    "power": 110,
+    "accuracy": 70,
+    "pp": 5,
+    "priority": 0,
+    "flags": []
+  },
+  "freeze-dry": {
+    "name_ja": "フリーズドライ",
+    "type": "ice",
+    "category": "special",
+    "power": 70,
+    "accuracy": 100,
+    "pp": 20,
+    "priority": 0,
+    "flags": [],
+    "effect": "freeze_dry"
+  },
+  "energy-ball": {
+    "name_ja": "エナジーボール",
+    "type": "grass",
+    "category": "special",
+    "power": 90,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "leaf-storm": {
+    "name_ja": "リーフストーム",
+    "type": "grass",
+    "category": "special",
+    "power": 130,
+    "accuracy": 90,
+    "pp": 5,
+    "priority": 0,
+    "flags": []
+  },
+  "giga-drain": {
+    "name_ja": "ギガドレイン",
+    "type": "grass",
+    "category": "special",
+    "power": 75,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "solar-beam": {
+    "name_ja": "ソーラービーム",
+    "type": "grass",
+    "category": "special",
+    "power": 120,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "psychic": {
+    "name_ja": "サイコキネシス",
+    "type": "psychic",
+    "category": "special",
+    "power": 90,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "psyshock": {
+    "name_ja": "サイコショック",
+    "type": "psychic",
+    "category": "special",
+    "power": 80,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": [],
+    "effect": "psyshock"
+  },
+  "psystrike": {
+    "name_ja": "サイコブレイク",
+    "type": "psychic",
+    "category": "special",
+    "power": 100,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": [],
+    "effect": "psyshock"
+  },
+  "expanding-force": {
+    "name_ja": "ワイドフォース",
+    "type": "psychic",
+    "category": "special",
+    "power": 80,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "moonblast": {
+    "name_ja": "ムーンフォース",
+    "type": "fairy",
+    "category": "special",
+    "power": 95,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": []
+  },
+  "dazzling-gleam": {
+    "name_ja": "マジカルシャイン",
+    "type": "fairy",
+    "category": "special",
+    "power": 80,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "shadow-ball": {
+    "name_ja": "シャドーボール",
+    "type": "ghost",
+    "category": "special",
+    "power": 80,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": []
+  },
+  "moongeist-beam": {
+    "name_ja": "ムーンライトブラスター",
+    "type": "ghost",
+    "category": "special",
+    "power": 100,
+    "accuracy": 100,
+    "pp": 5,
+    "priority": 0,
+    "flags": []
+  },
+  "hex": {
+    "name_ja": "たたりめ",
+    "type": "ghost",
+    "category": "special",
+    "power": 65,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": [],
+    "effect": "hex"
+  },
+  "dark-pulse": {
+    "name_ja": "あくのはどう",
+    "type": "dark",
+    "category": "special",
+    "power": 80,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": [
+      "pulse"
+    ]
+  },
+  "fiery-wrath": {
+    "name_ja": "せいなるほのお",
+    "type": "dark",
+    "category": "special",
+    "power": 90,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "aura-sphere": {
+    "name_ja": "はどうだん",
+    "type": "fighting",
+    "category": "special",
+    "power": 80,
+    "accuracy": null,
+    "pp": 20,
+    "priority": 0,
+    "flags": [
+      "pulse"
+    ]
+  },
+  "focus-blast": {
+    "name_ja": "きあいだま",
+    "type": "fighting",
+    "category": "special",
+    "power": 120,
+    "accuracy": 70,
+    "pp": 5,
+    "priority": 0,
+    "flags": [
+      "bullet"
+    ]
+  },
+  "vacuum-wave": {
+    "name_ja": "しんくうは",
+    "type": "fighting",
+    "category": "special",
+    "power": 40,
+    "accuracy": 100,
+    "pp": 30,
+    "priority": 1,
+    "flags": []
+  },
+  "earth-power": {
+    "name_ja": "だいちのちから",
+    "type": "ground",
+    "category": "special",
+    "power": 90,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "dragon-pulse": {
+    "name_ja": "りゅうのはどう",
+    "type": "dragon",
+    "category": "special",
+    "power": 85,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "pulse"
+    ]
+  },
+  "draco-meteor": {
+    "name_ja": "りゅうせいぐん",
+    "type": "dragon",
+    "category": "special",
+    "power": 130,
+    "accuracy": 90,
+    "pp": 5,
+    "priority": 0,
+    "flags": []
+  },
+  "spacial-rend": {
+    "name_ja": "やぶれたせかい",
+    "type": "dragon",
+    "category": "special",
+    "power": 100,
+    "accuracy": 95,
+    "pp": 5,
+    "priority": 0,
+    "flags": []
+  },
+  "hurricane": {
+    "name_ja": "ぼうふう",
+    "type": "flying",
+    "category": "special",
+    "power": 110,
+    "accuracy": 70,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "air-slash": {
+    "name_ja": "エアスラッシュ",
+    "type": "flying",
+    "category": "special",
+    "power": 75,
+    "accuracy": 95,
+    "pp": 15,
+    "priority": 0,
+    "flags": []
+  },
+  "bug-buzz": {
+    "name_ja": "むしのさざめき",
+    "type": "bug",
+    "category": "special",
+    "power": 90,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "sound"
+    ]
+  },
+  "flash-cannon": {
+    "name_ja": "ラスターカノン",
+    "type": "steel",
+    "category": "special",
+    "power": 80,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "power-gem": {
+    "name_ja": "パワージェム",
+    "type": "rock",
+    "category": "special",
+    "power": 80,
+    "accuracy": 100,
+    "pp": 20,
+    "priority": 0,
+    "flags": []
+  },
+  "sludge-bomb": {
+    "name_ja": "ヘドロばくだん",
+    "type": "poison",
+    "category": "special",
+    "power": 90,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "bullet"
+    ]
+  },
+  "sludge-wave": {
+    "name_ja": "ヘドロウェーブ",
+    "type": "poison",
+    "category": "special",
+    "power": 95,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "grass-knot": {
+    "name_ja": "くさむすび",
+    "type": "grass",
+    "category": "special",
+    "power": null,
+    "accuracy": 100,
+    "pp": 20,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ],
+    "effect": "grass_knot"
+  },
+  "gyro-ball": {
+    "name_ja": "ジャイロボール",
+    "type": "steel",
+    "category": "physical",
+    "power": null,
+    "accuracy": 100,
+    "pp": 5,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ],
+    "effect": "gyro_ball"
+  },
+  "future-sight": {
+    "name_ja": "みらいよち",
+    "type": "psychic",
+    "category": "special",
+    "power": 120,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "electro-drift": {
+    "name_ja": "エレクトロドリフト",
+    "type": "electric",
+    "category": "special",
+    "power": 100,
+    "accuracy": 100,
+    "pp": 5,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "astral-barrage": {
+    "name_ja": "アストラルビット",
+    "type": "ghost",
+    "category": "special",
+    "power": 120,
+    "accuracy": 100,
+    "pp": 5,
+    "priority": 0,
+    "flags": []
+  },
+  "precipice-blades": {
+    "name_ja": "だんがいのつるぎ",
+    "type": "ground",
+    "category": "physical",
+    "power": 120,
+    "accuracy": 85,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "protect": {
+    "name_ja": "まもる",
+    "type": "normal",
+    "category": "status",
+    "power": null,
+    "accuracy": null,
+    "pp": 10,
+    "priority": 4,
+    "flags": []
+  },
+  "substitute": {
+    "name_ja": "みがわり",
+    "type": "normal",
+    "category": "status",
+    "power": null,
+    "accuracy": null,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "swords-dance": {
+    "name_ja": "つるぎのまい",
+    "type": "normal",
+    "category": "status",
+    "power": null,
+    "accuracy": null,
+    "pp": 20,
+    "priority": 0,
+    "flags": []
+  },
+  "calm-mind": {
+    "name_ja": "めいそう",
+    "type": "psychic",
+    "category": "status",
+    "power": null,
+    "accuracy": null,
+    "pp": 20,
+    "priority": 0,
+    "flags": []
+  },
+  "nasty-plot": {
+    "name_ja": "わるだくみ",
+    "type": "dark",
+    "category": "status",
+    "power": null,
+    "accuracy": null,
+    "pp": 20,
+    "priority": 0,
+    "flags": []
+  },
+  "dragon-dance": {
+    "name_ja": "りゅうのまい",
+    "type": "dragon",
+    "category": "status",
+    "power": null,
+    "accuracy": null,
+    "pp": 20,
+    "priority": 0,
+    "flags": []
+  },
+  "quiver-dance": {
+    "name_ja": "ちょうのまい",
+    "type": "bug",
+    "category": "status",
+    "power": null,
+    "accuracy": null,
+    "pp": 20,
+    "priority": 0,
+    "flags": []
+  },
+  "shell-smash": {
+    "name_ja": "からをやぶる",
+    "type": "normal",
+    "category": "status",
+    "power": null,
+    "accuracy": null,
+    "pp": 15,
+    "priority": 0,
+    "flags": []
+  },
+  "roost": {
+    "name_ja": "はねやすめ",
+    "type": "flying",
+    "category": "status",
+    "power": null,
+    "accuracy": null,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "recover": {
+    "name_ja": "じこさいせい",
+    "type": "normal",
+    "category": "status",
+    "power": null,
+    "accuracy": null,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "stealth-rock": {
+    "name_ja": "ステルスロック",
+    "type": "rock",
+    "category": "status",
+    "power": null,
+    "accuracy": null,
+    "pp": 20,
+    "priority": 0,
+    "flags": []
+  },
+  "spikes": {
+    "name_ja": "まきびし",
+    "type": "ground",
+    "category": "status",
+    "power": null,
+    "accuracy": null,
+    "pp": 20,
+    "priority": 0,
+    "flags": []
+  },
+  "toxic-spikes": {
+    "name_ja": "どくびし",
+    "type": "poison",
+    "category": "status",
+    "power": null,
+    "accuracy": null,
+    "pp": 20,
+    "priority": 0,
+    "flags": []
+  },
+  "taunt": {
+    "name_ja": "ちょうはつ",
+    "type": "dark",
+    "category": "status",
+    "power": null,
+    "accuracy": 100,
+    "pp": 20,
+    "priority": 0,
+    "flags": []
+  },
+  "will-o-wisp": {
+    "name_ja": "おにび",
+    "type": "fire",
+    "category": "status",
+    "power": null,
+    "accuracy": 85,
+    "pp": 15,
+    "priority": 0,
+    "flags": []
+  },
+  "thunder-wave": {
+    "name_ja": "でんじは",
+    "type": "electric",
+    "category": "status",
+    "power": null,
+    "accuracy": 90,
+    "pp": 20,
+    "priority": 0,
+    "flags": []
+  },
+  "toxic": {
+    "name_ja": "どく",
+    "type": "poison",
+    "category": "status",
+    "power": null,
+    "accuracy": 90,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "flower-trick": {
+    "name_ja": "フラワートリック",
+    "type": "grass",
+    "category": "physical",
+    "power": 70,
+    "accuracy": null,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ],
+    "effect": "always_crit"
+  },
+  "low-kick": {
+    "name_ja": "けたぐり",
+    "type": "fighting",
+    "category": "physical",
+    "power": null,
+    "accuracy": 100,
+    "pp": 20,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ],
+    "effect": "low_kick"
+  },
+  "weather-ball": {
+    "name_ja": "ウェザーボール",
+    "type": "normal",
+    "category": "special",
+    "power": 50,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": [],
+    "effect": "weather_ball"
+  },
+  "electro-ball": {
+    "name_ja": "エレクトロボール",
+    "type": "electric",
+    "category": "special",
+    "power": null,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": [],
+    "effect": "electro_ball"
+  },
+  "eruption": {
+    "name_ja": "ふんえん",
+    "type": "fire",
+    "category": "special",
+    "power": 150,
+    "accuracy": 100,
+    "pp": 5,
+    "priority": 0,
+    "flags": [],
+    "effect": "eruption"
+  },
+  "water-spout": {
+    "name_ja": "しおふき",
+    "type": "water",
+    "category": "special",
+    "power": 150,
+    "accuracy": 100,
+    "pp": 5,
+    "priority": 0,
+    "flags": [],
+    "effect": "eruption"
+  },
+  "bullet-seed": {
+    "name_ja": "タネマシンガン",
+    "type": "grass",
+    "category": "physical",
+    "power": 25,
+    "accuracy": 100,
+    "pp": 30,
+    "priority": 0,
+    "flags": []
+  },
+  "rock-blast": {
+    "name_ja": "いわおとし",
+    "type": "rock",
+    "category": "physical",
+    "power": 25,
+    "accuracy": 90,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "icicle-spear": {
+    "name_ja": "つららばり",
+    "type": "ice",
+    "category": "physical",
+    "power": 25,
+    "accuracy": 100,
+    "pp": 30,
+    "priority": 0,
+    "flags": []
+  },
+  "pin-missile": {
+    "name_ja": "ミサイルばり",
+    "type": "bug",
+    "category": "physical",
+    "power": 25,
+    "accuracy": 95,
+    "pp": 20,
+    "priority": 0,
+    "flags": []
+  },
+  "scale-shot": {
+    "name_ja": "スケイルショット",
+    "type": "dragon",
+    "category": "physical",
+    "power": 25,
+    "accuracy": 90,
+    "pp": 20,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "population-bomb": {
+    "name_ja": "ポピュレーションボム",
+    "type": "normal",
+    "category": "physical",
+    "power": 20,
+    "accuracy": 90,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "triple-axel": {
+    "name_ja": "トリプルアクセル",
+    "type": "ice",
+    "category": "physical",
+    "power": 20,
+    "accuracy": 90,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "dragon-darts": {
+    "name_ja": "ドラゴンダーツ",
+    "type": "dragon",
+    "category": "physical",
+    "power": 50,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "dual-wingbeat": {
+    "name_ja": "ダブルウイング",
+    "type": "flying",
+    "category": "physical",
+    "power": 40,
+    "accuracy": 90,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "double-iron-bash": {
+    "name_ja": "ダブルアイアンバッシャー",
+    "type": "steel",
+    "category": "physical",
+    "power": 60,
+    "accuracy": 100,
+    "pp": 5,
+    "priority": 0,
+    "flags": [
+      "contact",
+      "punch"
+    ]
+  },
+  "water-shuriken": {
+    "name_ja": "みずしゅりけん",
+    "type": "water",
+    "category": "physical",
+    "power": 15,
+    "accuracy": 100,
+    "pp": 20,
+    "priority": 1,
+    "flags": []
+  },
+  "tail-slap": {
+    "name_ja": "テールスラップ",
+    "type": "normal",
+    "category": "physical",
+    "power": 25,
+    "accuracy": 85,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "arm-thrust": {
+    "name_ja": "むらうち",
+    "type": "fighting",
+    "category": "physical",
+    "power": 15,
+    "accuracy": 100,
+    "pp": 20,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "bone-rush": {
+    "name_ja": "ホネラッシュ",
+    "type": "ground",
+    "category": "physical",
+    "power": 25,
+    "accuracy": 90,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "fury-swipes": {
+    "name_ja": "ひっかく",
+    "type": "normal",
+    "category": "physical",
+    "power": 18,
+    "accuracy": 80,
+    "pp": 15,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "gear-grind": {
+    "name_ja": "ギアソーサー",
+    "type": "steel",
+    "category": "physical",
+    "power": 50,
+    "accuracy": 85,
+    "pp": 15,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "dual-chop": {
+    "name_ja": "ドラゴンテール",
+    "type": "dragon",
+    "category": "physical",
+    "power": 40,
+    "accuracy": 90,
+    "pp": 15,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "double-kick": {
+    "name_ja": "にどげり",
+    "type": "fighting",
+    "category": "physical",
+    "power": 30,
+    "accuracy": 100,
+    "pp": 30,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "double-hit": {
+    "name_ja": "ダブルヒット",
+    "type": "normal",
+    "category": "physical",
+    "power": 35,
+    "accuracy": 90,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "bonemerang": {
+    "name_ja": "ホネブーメラン",
+    "type": "ground",
+    "category": "physical",
+    "power": 50,
+    "accuracy": 90,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "solar-blade": {
+    "name_ja": "ソーラーブレード",
+    "type": "grass",
+    "category": "physical",
+    "power": 125,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "contact",
+      "slicing"
+    ]
+  },
+  "photon-geyser": {
+    "name_ja": "フォトンゲイザー",
+    "type": "psychic",
+    "category": "special",
+    "power": 100,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": [],
+    "effect": "psyshock"
+  },
+  "luster-purge": {
+    "name_ja": "ルスターパージ",
+    "type": "psychic",
+    "category": "special",
+    "power": 70,
+    "accuracy": 100,
+    "pp": 5,
+    "priority": 0,
+    "flags": []
+  },
+  "mist-ball": {
+    "name_ja": "ミストボール",
+    "type": "psychic",
+    "category": "special",
+    "power": 70,
+    "accuracy": 100,
+    "pp": 5,
+    "priority": 0,
+    "flags": []
+  },
+  "spirit-shackle": {
+    "name_ja": "かげぬい",
+    "type": "ghost",
+    "category": "physical",
+    "power": 80,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "sunsteel-strike": {
+    "name_ja": "サンスチールストライク",
+    "type": "steel",
+    "category": "physical",
+    "power": 100,
+    "accuracy": 100,
+    "pp": 5,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "secret-sword": {
+    "name_ja": "みきりのつるぎ",
+    "type": "fighting",
+    "category": "special",
+    "power": 85,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "slicing"
+    ],
+    "effect": "psyshock"
+  },
+  "behemoth-bash": {
+    "name_ja": "ビーストブースト",
+    "type": "steel",
+    "category": "physical",
+    "power": 100,
+    "accuracy": 100,
+    "pp": 5,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "behemoth-blade": {
+    "name_ja": "ビーストブースト",
+    "type": "steel",
+    "category": "physical",
+    "power": 100,
+    "accuracy": 100,
+    "pp": 5,
+    "priority": 0,
+    "flags": [
+      "contact",
+      "slicing"
+    ]
+  },
+  "clangorous-soul": {
+    "name_ja": "ソウルビート",
+    "type": "dragon",
+    "category": "status",
+    "power": null,
+    "accuracy": null,
+    "pp": 5,
+    "priority": 0,
+    "flags": []
+  },
+  "ruination": {
+    "name_ja": "はんげきのじゅもん",
+    "type": "dark",
+    "category": "special",
+    "power": null,
+    "accuracy": 90,
+    "pp": 10,
+    "priority": 0,
+    "flags": [],
+    "effect": "half_hp"
+  },
+  "fissure": {
+    "name_ja": "じわれ",
+    "type": "ground",
+    "category": "physical",
+    "power": null,
+    "accuracy": 30,
+    "pp": 5,
+    "priority": 0,
+    "flags": []
+  },
+  "sheer-cold": {
+    "name_ja": "ぜったいれいど",
+    "type": "ice",
+    "category": "special",
+    "power": null,
+    "accuracy": 30,
+    "pp": 5,
+    "priority": 0,
+    "flags": []
+  },
+  "ice-spinner": {
+    "name_ja": "アイススピナー",
+    "type": "ice",
+    "category": "physical",
+    "power": 80,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "make-it-rain": {
+    "name_ja": "コインチャージ",
+    "type": "steel",
+    "category": "special",
+    "power": 120,
+    "accuracy": 100,
+    "pp": 5,
+    "priority": 0,
+    "flags": []
+  },
+  "rage-fist": {
+    "name_ja": "アームハンマー",
+    "type": "ghost",
+    "category": "physical",
+    "power": 50,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "contact",
+      "punch"
+    ]
+  },
+  "kowtow-cleave": {
+    "name_ja": "ひざまずく",
+    "type": "dark",
+    "category": "physical",
+    "power": 85,
+    "accuracy": null,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "contact",
+      "slicing"
+    ]
+  },
+  "triple-dive": {
+    "name_ja": "トリプルダイブ",
+    "type": "water",
+    "category": "physical",
+    "power": 30,
+    "accuracy": 95,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "bitter-blade": {
+    "name_ja": "ほのおのつるぎ",
+    "type": "fire",
+    "category": "physical",
+    "power": 90,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "contact",
+      "slicing"
+    ]
+  },
+  "ceaseless-edge": {
+    "name_ja": "ムゲンのやいば",
+    "type": "dark",
+    "category": "physical",
+    "power": 65,
+    "accuracy": 90,
+    "pp": 15,
+    "priority": 0,
+    "flags": [
+      "contact",
+      "slicing"
+    ]
+  },
+  "tachyon-cutter": {
+    "name_ja": "タキオンカッター",
+    "type": "steel",
+    "category": "special",
+    "power": 50,
+    "accuracy": null,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "slicing"
+    ]
+  },
+  "tera-blast": {
+    "name_ja": "テラバースト",
+    "type": "normal",
+    "category": "special",
+    "power": 80,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": [],
+    "effect": "tera_blast"
+  },
+  "psyblade": {
+    "name_ja": "サイコブレイド",
+    "type": "psychic",
+    "category": "physical",
+    "power": 80,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": [
+      "contact",
+      "slicing"
+    ]
+  },
+  "mighty-cleave": {
+    "name_ja": "きょだいきりひらく",
+    "type": "rock",
+    "category": "physical",
+    "power": 95,
+    "accuracy": 100,
+    "pp": 5,
+    "priority": 0,
+    "flags": [
+      "contact",
+      "slicing"
+    ]
+  },
+  "stone-axe": {
+    "name_ja": "アックスドロップ",
+    "type": "rock",
+    "category": "physical",
+    "power": 65,
+    "accuracy": 90,
+    "pp": 15,
+    "priority": 0,
+    "flags": [
+      "contact",
+      "slicing"
+    ]
+  },
+  "springtide-storm": {
+    "name_ja": "ラブリースター",
+    "type": "fairy",
+    "category": "special",
+    "power": 100,
+    "accuracy": 80,
+    "pp": 5,
+    "priority": 0,
+    "flags": []
+  },
+  "bleakwind-storm": {
+    "name_ja": "きりさく",
+    "type": "flying",
+    "category": "special",
+    "power": 100,
+    "accuracy": 80,
+    "pp": 5,
+    "priority": 0,
+    "flags": []
+  },
+  "wildbolt-storm": {
+    "name_ja": "いかりのうねり",
+    "type": "electric",
+    "category": "special",
+    "power": 100,
+    "accuracy": 80,
+    "pp": 5,
+    "priority": 0,
+    "flags": []
+  },
+  "sandsear-storm": {
+    "name_ja": "ねつさかまくすな",
+    "type": "ground",
+    "category": "special",
+    "power": 100,
+    "accuracy": 80,
+    "pp": 5,
+    "priority": 0,
+    "flags": []
+  },
+  "last-respects": {
+    "name_ja": "はかいのひかり",
+    "type": "ghost",
+    "category": "physical",
+    "power": 50,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "collision-course": {
+    "name_ja": "テクトニックレイブ",
+    "type": "fighting",
+    "category": "physical",
+    "power": 100,
+    "accuracy": 100,
+    "pp": 5,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "annihilape": {
+    "name_ja": "かみくだく",
+    "type": "fighting",
+    "category": "physical",
+    "power": 100,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "fillet-away": {
+    "name_ja": "なみだめ",
+    "type": "normal",
+    "category": "status",
+    "power": null,
+    "accuracy": null,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "chi-strike": {
+    "name_ja": "きあいだま",
+    "type": "fighting",
+    "category": "physical",
+    "power": 50,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "armor-cannon": {
+    "name_ja": "アーマーキャノン",
+    "type": "fire",
+    "category": "special",
+    "power": 120,
+    "accuracy": 100,
+    "pp": 5,
+    "priority": 0,
+    "flags": []
+  },
+  "bitter-malice": {
+    "name_ja": "のろいのルーレット",
+    "type": "ghost",
+    "category": "special",
+    "power": 75,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "axe-kick": {
+    "name_ja": "せいなるつるぎ",
+    "type": "fighting",
+    "category": "physical",
+    "power": 120,
+    "accuracy": 90,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "esper-wing": {
+    "name_ja": "サイコウイング",
+    "type": "psychic",
+    "category": "special",
+    "power": 80,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "agility": {
+    "name_ja": "こうそくいどう",
+    "type": "psychic",
+    "category": "status",
+    "power": null,
+    "accuracy": null,
+    "pp": 30,
+    "priority": 0,
+    "flags": []
+  },
+  "bulk-up": {
+    "name_ja": "ビルドアップ",
+    "type": "fighting",
+    "category": "status",
+    "power": null,
+    "accuracy": null,
+    "pp": 20,
+    "priority": 0,
+    "flags": []
+  },
+  "hone-claws": {
+    "name_ja": "つめとぎ",
+    "type": "dark",
+    "category": "status",
+    "power": null,
+    "accuracy": null,
+    "pp": 15,
+    "priority": 0,
+    "flags": []
+  },
+  "spore": {
+    "name_ja": "キノコのほうし",
+    "type": "grass",
+    "category": "status",
+    "power": null,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": []
+  },
+  "nuzzle": {
+    "name_ja": "ほっぺすりすり",
+    "type": "electric",
+    "category": "physical",
+    "power": 20,
+    "accuracy": 100,
+    "pp": 20,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "salt-cure": {
+    "name_ja": "しおづけ",
+    "type": "rock",
+    "category": "physical",
+    "power": 40,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": []
+  },
+  "body-slam": {
+    "name_ja": "のしかかり",
+    "type": "normal",
+    "category": "physical",
+    "power": 85,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "fleur-cannon": {
+    "name_ja": "フルールカノン",
+    "type": "fairy",
+    "category": "special",
+    "power": 130,
+    "accuracy": 90,
+    "pp": 5,
+    "priority": 0,
+    "flags": []
+  },
+  "roar-of-time": {
+    "name_ja": "ときのほうこう",
+    "type": "dragon",
+    "category": "special",
+    "power": 150,
+    "accuracy": 90,
+    "pp": 5,
+    "priority": 0,
+    "flags": []
+  },
+  "oblivion-wing": {
+    "name_ja": "ランページ",
+    "type": "flying",
+    "category": "special",
+    "power": 80,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "land-s-wrath": {
+    "name_ja": "だいちのはどう",
+    "type": "ground",
+    "category": "special",
+    "power": 90,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "thunderous-kick": {
+    "name_ja": "ライトニングキック",
+    "type": "fighting",
+    "category": "physical",
+    "power": 90,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "misty-explosion": {
+    "name_ja": "ミストフィールド",
+    "type": "fairy",
+    "category": "special",
+    "power": 100,
+    "accuracy": 100,
+    "pp": 5,
+    "priority": 0,
+    "flags": []
+  },
+  "grassy-glide": {
+    "name_ja": "グラスフィールド",
+    "type": "grass",
+    "category": "physical",
+    "power": 55,
+    "accuracy": 100,
+    "pp": 20,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "rising-voltage": {
+    "name_ja": "でんきフィールド",
+    "type": "electric",
+    "category": "special",
+    "power": 70,
+    "accuracy": 100,
+    "pp": 20,
+    "priority": 0,
+    "flags": []
+  },
+  "terrain-pulse": {
+    "name_ja": "フィールドフォース",
+    "type": "normal",
+    "category": "special",
+    "power": 50,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": [],
+    "effect": "terrain_pulse"
+  },
+  "hyper-voice": {
+    "name_ja": "ハイパーボイス",
+    "type": "normal",
+    "category": "special",
+    "power": 90,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "sound"
+    ]
+  },
+  "boomburst": {
+    "name_ja": "はかいのねごえ",
+    "type": "normal",
+    "category": "special",
+    "power": 140,
+    "accuracy": 100,
+    "pp": 10,
+    "priority": 0,
+    "flags": [
+      "sound"
+    ]
+  },
+  "clangorous-soulblaze": {
+    "name_ja": "ソウルビートZ",
+    "type": "dragon",
+    "category": "special",
+    "power": 185,
+    "accuracy": null,
+    "pp": 1,
+    "priority": 0,
+    "flags": [
+      "sound"
+    ]
+  },
+  "snap-trap": {
+    "name_ja": "するどいキバ",
+    "type": "grass",
+    "category": "physical",
+    "power": 35,
+    "accuracy": 100,
+    "pp": 15,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "natures-madness": {
+    "name_ja": "しぜんのいかり",
+    "type": "fairy",
+    "category": "special",
+    "power": null,
+    "accuracy": 90,
+    "pp": 10,
+    "priority": 0,
+    "flags": [],
+    "effect": "half_hp"
+  },
+  "steel-roller": {
+    "name_ja": "スチールローラー",
+    "type": "steel",
+    "category": "physical",
+    "power": 130,
+    "accuracy": 100,
+    "pp": 5,
+    "priority": 0,
+    "flags": [
+      "contact"
+    ]
+  },
+  "misty-terrain": {
+    "name_ja": "ミストフィールド",
+    "type": "fairy",
+    "category": "status",
+    "power": null,
+    "accuracy": null,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "electric-terrain": {
+    "name_ja": "エレクトリックフィールド",
+    "type": "electric",
+    "category": "status",
+    "power": null,
+    "accuracy": null,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "grassy-terrain": {
+    "name_ja": "グラスフィールド",
+    "type": "grass",
+    "category": "status",
+    "power": null,
+    "accuracy": null,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "psychic-terrain": {
+    "name_ja": "サイコフィールド",
+    "type": "psychic",
+    "category": "status",
+    "power": null,
+    "accuracy": null,
+    "pp": 10,
+    "priority": 0,
+    "flags": []
+  },
+  "tailwind": {
+    "name_ja": "おいかぜ",
+    "type": "flying",
+    "category": "status",
+    "power": null,
+    "accuracy": null,
+    "pp": 15,
+    "priority": 0,
+    "flags": []
+  },
+  "trick-room": {
+    "name_ja": "トリックルーム",
+    "type": "psychic",
+    "category": "status",
+    "power": null,
+    "accuracy": null,
+    "pp": 5,
+    "priority": -7,
+    "flags": []
+  }
 }

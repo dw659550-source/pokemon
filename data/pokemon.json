@@ -1,82 +1,1534 @@
 {
-  "venusaur":    {"name_ja":"フシギバナ",  "types":["grass","poison"],   "base_stats":{"hp":80,"attack":82,"defense":83,"sp_attack":100,"sp_defense":100,"speed":80},"abilities":["overgrow","chlorophyll"]},
-  "charizard":   {"name_ja":"リザードン",  "types":["fire","flying"],    "base_stats":{"hp":78,"attack":84,"defense":78,"sp_attack":109,"sp_defense":85,"speed":100},"abilities":["blaze","solar-power"],
-    "mega_x":{"types":["fire","dragon"],"base_stats":{"hp":78,"attack":130,"defense":111,"sp_attack":130,"sp_defense":85,"speed":100}},
-    "mega_y":{"types":["fire","flying"],"base_stats":{"hp":78,"attack":104,"defense":78,"sp_attack":159,"sp_defense":115,"speed":100}}},
-  "blastoise":   {"name_ja":"カメックス",  "types":["water"],            "base_stats":{"hp":79,"attack":83,"defense":100,"sp_attack":85,"sp_defense":105,"speed":78},"abilities":["torrent","rain-dish"]},
-  "gengar":      {"name_ja":"ゲンガー",    "types":["ghost","poison"],   "base_stats":{"hp":60,"attack":65,"defense":60,"sp_attack":130,"sp_defense":75,"speed":110},"abilities":["cursed-body"]},
-  "alakazam":    {"name_ja":"フーディン",  "types":["psychic"],          "base_stats":{"hp":55,"attack":50,"defense":45,"sp_attack":135,"sp_defense":95,"speed":120},"abilities":["synchronize","inner-focus","magic-guard"]},
-  "machamp":     {"name_ja":"カイリキー",  "types":["fighting"],         "base_stats":{"hp":90,"attack":130,"defense":80,"sp_attack":65,"sp_defense":85,"speed":55},"abilities":["guts","no-guard","steadfast"]},
-  "slowbro":     {"name_ja":"ヤドラン",    "types":["water","psychic"],  "base_stats":{"hp":95,"attack":75,"defense":110,"sp_attack":100,"sp_defense":80,"speed":30},"abilities":["oblivious","own-tempo","regenerator"]},
-  "mewtwo":      {"name_ja":"ミュウツー",  "types":["psychic"],          "base_stats":{"hp":106,"attack":110,"defense":90,"sp_attack":154,"sp_defense":90,"speed":130},"abilities":["pressure","unnerve"],
-    "mega_x":{"types":["psychic","fighting"],"base_stats":{"hp":106,"attack":190,"defense":100,"sp_attack":154,"sp_defense":100,"speed":130}},
-    "mega_y":{"types":["psychic"],"base_stats":{"hp":106,"attack":150,"defense":70,"sp_attack":194,"sp_defense":120,"speed":140}}},
-  "dragonite":   {"name_ja":"カイリュー",  "types":["dragon","flying"],  "base_stats":{"hp":91,"attack":134,"defense":95,"sp_attack":100,"sp_defense":100,"speed":80},"abilities":["inner-focus","multiscale"]},
-  "tyranitar":   {"name_ja":"バンギラス",  "types":["rock","dark"],      "base_stats":{"hp":100,"attack":134,"defense":110,"sp_attack":95,"sp_defense":100,"speed":61},"abilities":["sand-stream","unnerve"]},
-  "scizor":      {"name_ja":"ハッサム",    "types":["bug","steel"],      "base_stats":{"hp":70,"attack":130,"defense":100,"sp_attack":55,"sp_defense":80,"speed":65},"abilities":["swarm","technician","light-metal"]},
-  "heracross":   {"name_ja":"ヘラクロス",  "types":["bug","fighting"],   "base_stats":{"hp":80,"attack":125,"defense":75,"sp_attack":40,"sp_defense":95,"speed":85},"abilities":["swarm","guts","moxie"]},
-  "blissey":     {"name_ja":"ハピナス",    "types":["normal"],           "base_stats":{"hp":255,"attack":10,"defense":10,"sp_attack":75,"sp_defense":135,"speed":55},"abilities":["natural-cure","serene-grace","healer"]},
-  "espeon":      {"name_ja":"エーフィ",    "types":["psychic"],          "base_stats":{"hp":65,"attack":65,"defense":60,"sp_attack":130,"sp_defense":95,"speed":110},"abilities":["synchronize","magic-bounce"]},
-  "umbreon":     {"name_ja":"ブラッキー",  "types":["dark"],             "base_stats":{"hp":95,"attack":65,"defense":110,"sp_attack":60,"sp_defense":130,"speed":65},"abilities":["synchronize","inner-focus"]},
-  "blaziken":    {"name_ja":"バシャーモ",  "types":["fire","fighting"],  "base_stats":{"hp":80,"attack":120,"defense":70,"sp_attack":110,"sp_defense":70,"speed":80},"abilities":["blaze","speed-boost"]},
-  "swampert":    {"name_ja":"ラグラージ",  "types":["water","ground"],   "base_stats":{"hp":100,"attack":110,"defense":90,"sp_attack":85,"sp_defense":90,"speed":60},"abilities":["torrent","damp"]},
-  "gardevoir":   {"name_ja":"サーナイト",  "types":["psychic","fairy"],  "base_stats":{"hp":68,"attack":65,"defense":65,"sp_attack":125,"sp_defense":115,"speed":80},"abilities":["synchronize","trace","telepathy"]},
-  "breloom":     {"name_ja":"キノガッサ",  "types":["grass","fighting"], "base_stats":{"hp":60,"attack":130,"defense":80,"sp_attack":60,"sp_defense":60,"speed":70},"abilities":["effect-spore","poison-heal","technician"]},
-  "salamence":   {"name_ja":"ボーマンダ",  "types":["dragon","flying"],  "base_stats":{"hp":95,"attack":135,"defense":80,"sp_attack":110,"sp_defense":80,"speed":100},"abilities":["intimidate","moxie"],
-    "mega":{"types":["dragon","flying"],"base_stats":{"hp":95,"attack":145,"defense":130,"sp_attack":120,"sp_defense":90,"speed":120}}},
-  "metagross":   {"name_ja":"メタグロス",  "types":["steel","psychic"],  "base_stats":{"hp":80,"attack":135,"defense":130,"sp_attack":95,"sp_defense":90,"speed":70},"abilities":["clear-body","light-metal"],
-    "mega":{"types":["steel","psychic"],"base_stats":{"hp":80,"attack":145,"defense":150,"sp_attack":105,"sp_defense":110,"speed":110}}},
-  "latias":      {"name_ja":"ラティアス",  "types":["dragon","psychic"], "base_stats":{"hp":80,"attack":80,"defense":90,"sp_attack":110,"sp_defense":130,"speed":110},"abilities":["levitate"]},
-  "latios":      {"name_ja":"ラティオス",  "types":["dragon","psychic"], "base_stats":{"hp":80,"attack":90,"defense":80,"sp_attack":130,"sp_defense":110,"speed":110},"abilities":["levitate"]},
-  "rayquaza":    {"name_ja":"レックウザ",  "types":["dragon","flying"],  "base_stats":{"hp":105,"attack":150,"defense":90,"sp_attack":150,"sp_defense":90,"speed":95},"abilities":["air-lock","cloud-nine"]},
-  "garchomp":    {"name_ja":"ガブリアス",  "types":["dragon","ground"],  "base_stats":{"hp":108,"attack":130,"defense":95,"sp_attack":80,"sp_defense":85,"speed":102},"abilities":["sand-veil","rough-skin"]},
-  "lucario":     {"name_ja":"ルカリオ",    "types":["fighting","steel"], "base_stats":{"hp":70,"attack":110,"defense":70,"sp_attack":115,"sp_defense":70,"speed":90},"abilities":["steadfast","inner-focus","justified"]},
-  "weavile":     {"name_ja":"マニューラ",  "types":["dark","ice"],       "base_stats":{"hp":70,"attack":120,"defense":65,"sp_attack":45,"sp_defense":85,"speed":125},"abilities":["pressure","pickpocket"]},
-  "togekiss":    {"name_ja":"トゲキッス",  "types":["fairy","flying"],   "base_stats":{"hp":85,"attack":50,"defense":95,"sp_attack":120,"sp_defense":115,"speed":80},"abilities":["hustle","serene-grace","super-luck"]},
-  "infernape":   {"name_ja":"ゴウカザル",  "types":["fire","fighting"],  "base_stats":{"hp":76,"attack":104,"defense":71,"sp_attack":104,"sp_defense":71,"speed":108},"abilities":["blaze","iron-fist"]},
-  "empoleon":    {"name_ja":"エンペルト",  "types":["water","steel"],    "base_stats":{"hp":84,"attack":86,"defense":88,"sp_attack":111,"sp_defense":101,"speed":60},"abilities":["torrent","defiant"]},
-  "chandelure":  {"name_ja":"シャンデラ",  "types":["ghost","fire"],     "base_stats":{"hp":60,"attack":55,"defense":90,"sp_attack":145,"sp_defense":90,"speed":80},"abilities":["flash-fire","flame-body","infiltrator"]},
-  "excadrill":   {"name_ja":"ドリュウズ",  "types":["ground","steel"],   "base_stats":{"hp":110,"attack":135,"defense":60,"sp_attack":50,"sp_defense":65,"speed":88},"abilities":["sand-rush","sand-force","mold-breaker"]},
-  "conkeldurr":  {"name_ja":"ローブシン",  "types":["fighting"],         "base_stats":{"hp":105,"attack":140,"defense":95,"sp_attack":55,"sp_defense":65,"speed":45},"abilities":["guts","sheer-force","iron-fist"]},
-  "landorus-t":  {"name_ja":"ランドロス(霊獣)","types":["ground","flying"],"base_stats":{"hp":89,"attack":145,"defense":90,"sp_attack":105,"sp_defense":80,"speed":91},"abilities":["intimidate"]},
-  "thundurus-t": {"name_ja":"ボルトロス(霊獣)","types":["electric","flying"],"base_stats":{"hp":79,"attack":105,"defense":70,"sp_attack":145,"sp_defense":80,"speed":101},"abilities":["volt-absorb"]},
-  "kyurem-w":    {"name_ja":"キュレム(ホワイト)","types":["dragon","ice"],"base_stats":{"hp":125,"attack":120,"defense":90,"sp_attack":170,"sp_defense":100,"speed":95},"abilities":["turboblaze"]},
-  "greninja":    {"name_ja":"ゲッコウガ",  "types":["water","dark"],     "base_stats":{"hp":72,"attack":95,"defense":67,"sp_attack":103,"sp_defense":71,"speed":122},"abilities":["torrent","protean","battle-bond"]},
-  "talonflame":  {"name_ja":"ファイアロー","types":["fire","flying"],    "base_stats":{"hp":78,"attack":81,"defense":71,"sp_attack":74,"sp_defense":69,"speed":126},"abilities":["flame-body","gale-wings"]},
-  "aegislash":   {"name_ja":"ギルガルド", "types":["steel","ghost"],    "base_stats":{"hp":60,"attack":50,"defense":140,"sp_attack":50,"sp_defense":140,"speed":60},"abilities":["stance-change"],
-    "blade":{"types":["steel","ghost"],"base_stats":{"hp":60,"attack":140,"defense":50,"sp_attack":140,"sp_defense":50,"speed":60}}},
-  "sylveon":     {"name_ja":"ニンフィア",  "types":["fairy"],            "base_stats":{"hp":95,"attack":65,"defense":65,"sp_attack":110,"sp_defense":130,"speed":60},"abilities":["cute-charm","pixilate"]},
-  "toxapex":     {"name_ja":"ドヒドイデ",  "types":["poison","water"],   "base_stats":{"hp":50,"attack":63,"defense":152,"sp_attack":53,"sp_defense":142,"speed":35},"abilities":["merciless","limber","regenerator"]},
-  "mimikyu":     {"name_ja":"ミミッキュ",  "types":["ghost","fairy"],    "base_stats":{"hp":55,"attack":90,"defense":80,"sp_attack":50,"sp_defense":105,"speed":96},"abilities":["disguise"]},
-  "tapu-koko":   {"name_ja":"カプ・コケコ","types":["electric","fairy"], "base_stats":{"hp":70,"attack":115,"defense":85,"sp_attack":95,"sp_defense":75,"speed":130},"abilities":["electric-surge","telepathy"]},
-  "tapu-lele":   {"name_ja":"カプ・テテフ","types":["psychic","fairy"],  "base_stats":{"hp":70,"attack":85,"defense":75,"sp_attack":130,"sp_defense":115,"speed":95},"abilities":["psychic-surge","telepathy"]},
-  "kartana":     {"name_ja":"カミツルギ",  "types":["grass","steel"],    "base_stats":{"hp":59,"attack":181,"defense":131,"sp_attack":59,"sp_defense":31,"speed":109},"abilities":["beast-boost"]},
-  "dragapult":   {"name_ja":"ドラパルト",  "types":["dragon","ghost"],   "base_stats":{"hp":88,"attack":120,"defense":75,"sp_attack":100,"sp_defense":75,"speed":142},"abilities":["clear-body","infiltrator","cursed-body"]},
-  "urshifu-s":   {"name_ja":"ウーラオス(一撃)",  "types":["fighting","dark"],  "base_stats":{"hp":100,"attack":130,"defense":100,"sp_attack":63,"sp_defense":60,"speed":97},"abilities":["unseen-fist"]},
-  "urshifu-r":   {"name_ja":"ウーラオス(連撃)",  "types":["fighting","water"], "base_stats":{"hp":100,"attack":130,"defense":100,"sp_attack":63,"sp_defense":60,"speed":97},"abilities":["unseen-fist"]},
-  "zacian-c":    {"name_ja":"ザシアン(王)",      "types":["fairy","steel"],    "base_stats":{"hp":92,"attack":170,"defense":115,"sp_attack":80,"sp_defense":115,"speed":148},"abilities":["intrepid-sword"]},
-  "zamazenta-c": {"name_ja":"ザマゼンタ(王)",    "types":["fighting","steel"], "base_stats":{"hp":92,"attack":130,"defense":145,"sp_attack":80,"sp_defense":145,"speed":128},"abilities":["dauntless-shield"]},
-  "calyrex-ice": {"name_ja":"バドレックス(白馬)","types":["psychic","ice"],    "base_stats":{"hp":100,"attack":165,"defense":150,"sp_attack":85,"sp_defense":130,"speed":50},"abilities":["as-one-glastrier"]},
-  "calyrex-shadow":{"name_ja":"バドレックス(黒馬)","types":["psychic","ghost"],"base_stats":{"hp":100,"attack":85,"defense":80,"sp_attack":165,"sp_defense":100,"speed":150},"abilities":["as-one-spectrier"]},
-  "koraidon":    {"name_ja":"コライドン",  "types":["fighting","dragon"], "base_stats":{"hp":100,"attack":135,"defense":115,"sp_attack":85,"sp_defense":100,"speed":135},"abilities":["orichalcum-pulse"]},
-  "miraidon":    {"name_ja":"ミライドン",  "types":["electric","dragon"], "base_stats":{"hp":100,"attack":85,"defense":100,"sp_attack":135,"sp_defense":115,"speed":135},"abilities":["hadron-engine"]},
-  "iron-bundle": {"name_ja":"テツノツツミ","types":["ice","water"],      "base_stats":{"hp":56,"attack":80,"defense":114,"sp_attack":124,"sp_defense":60,"speed":136},"abilities":["quark-drive"]},
-  "iron-hands":  {"name_ja":"テツノカシラ","types":["fighting","electric"],"base_stats":{"hp":154,"attack":140,"defense":108,"sp_attack":50,"sp_defense":68,"speed":50},"abilities":["quark-drive"]},
-  "gholdengo":   {"name_ja":"サーフゴー",  "types":["steel","ghost"],    "base_stats":{"hp":87,"attack":60,"defense":95,"sp_attack":133,"sp_defense":91,"speed":84},"abilities":["good-as-gold"]},
-  "iron-valiant":{"name_ja":"テツノブジン","types":["fairy","fighting"],  "base_stats":{"hp":74,"attack":130,"defense":90,"sp_attack":120,"sp_defense":60,"speed":116},"abilities":["quark-drive"]},
-  "chi-yu":      {"name_ja":"チヲハウハネ","types":["fire","dark"],      "base_stats":{"hp":55,"attack":80,"defense":80,"sp_attack":135,"sp_defense":120,"speed":100},"abilities":["beads-of-ruin"]},
-  "chien-pao":   {"name_ja":"パオジアン",  "types":["dark","ice"],       "base_stats":{"hp":80,"attack":120,"defense":80,"sp_attack":90,"sp_defense":65,"speed":135},"abilities":["sword-of-ruin"]},
-  "ting-lu":     {"name_ja":"ディンルー",  "types":["dark","ground"],    "base_stats":{"hp":155,"attack":110,"defense":125,"sp_attack":55,"sp_defense":80,"speed":45},"abilities":["vessel-of-ruin"]},
-  "wo-chien":    {"name_ja":"チオンジェン","types":["dark","grass"],     "base_stats":{"hp":85,"attack":85,"defense":100,"sp_attack":95,"sp_defense":135,"speed":70},"abilities":["tablets-of-ruin"]},
-  "kyogre":      {"name_ja":"カイオーガ",  "types":["water"],            "base_stats":{"hp":100,"attack":100,"defense":90,"sp_attack":150,"sp_defense":140,"speed":90},"abilities":["drizzle","primordial-sea"]},
-  "groudon":     {"name_ja":"グラードン",  "types":["ground"],           "base_stats":{"hp":100,"attack":150,"defense":140,"sp_attack":100,"sp_defense":90,"speed":90},"abilities":["drought","desolate-land"]},
-  "rillaboom":   {"name_ja":"ゴリランダー","types":["grass"],            "base_stats":{"hp":100,"attack":125,"defense":90,"sp_attack":60,"sp_defense":70,"speed":85},"abilities":["overgrow","grassy-surge"]},
-  "cinderace":   {"name_ja":"エースバーン","types":["fire"],             "base_stats":{"hp":80,"attack":116,"defense":75,"sp_attack":65,"sp_defense":75,"speed":119},"abilities":["blaze","libero"]},
-  "gyarados":    {"name_ja":"ギャラドス",  "types":["water","flying"],   "base_stats":{"hp":95,"attack":125,"defense":79,"sp_attack":60,"sp_defense":100,"speed":81},"abilities":["intimidate","moxie"]},
-  "hippowdon":   {"name_ja":"カバルドン",  "types":["ground"],           "base_stats":{"hp":108,"attack":112,"defense":118,"sp_attack":68,"sp_defense":72,"speed":47},"abilities":["sand-stream","sand-force"]},
-  "ferrothorn":  {"name_ja":"ナットレイ",  "types":["grass","steel"],    "base_stats":{"hp":74,"attack":94,"defense":131,"sp_attack":54,"sp_defense":116,"speed":20},"abilities":["iron-barbs","anticipation"]},
-  "heatran":     {"name_ja":"ヒードラン",  "types":["fire","steel"],     "base_stats":{"hp":91,"attack":90,"defense":106,"sp_attack":130,"sp_defense":106,"speed":77},"abilities":["flash-fire","flame-body"]},
-  "rotom-w":     {"name_ja":"ロトム(ウォッシュ)","types":["electric","water"],"base_stats":{"hp":50,"attack":65,"defense":107,"sp_attack":105,"sp_defense":107,"speed":86},"abilities":["levitate"]},
-  "kyurem-b":    {"name_ja":"キュレム(ブラック)","types":["dragon","ice"],"base_stats":{"hp":125,"attack":170,"defense":100,"sp_attack":120,"sp_defense":90,"speed":95},"abilities":["teravolt"]},
-  "landorus-i":  {"name_ja":"ランドロス(化身)","types":["ground","flying"],"base_stats":{"hp":89,"attack":125,"defense":90,"sp_attack":115,"sp_defense":80,"speed":101},"abilities":["sand-force","sheer-force"]}
+  "venusaur": {
+    "name_ja": "フシギバナ",
+    "types": [
+      "grass",
+      "poison"
+    ],
+    "base_stats": {
+      "hp": 80,
+      "attack": 82,
+      "defense": 83,
+      "sp_attack": 100,
+      "sp_defense": 100,
+      "speed": 80
+    },
+    "abilities": [
+      "overgrow",
+      "chlorophyll"
+    ],
+    "weight": 100.0
+  },
+  "charizard": {
+    "name_ja": "リザードン",
+    "types": [
+      "fire",
+      "flying"
+    ],
+    "base_stats": {
+      "hp": 78,
+      "attack": 84,
+      "defense": 78,
+      "sp_attack": 109,
+      "sp_defense": 85,
+      "speed": 100
+    },
+    "abilities": [
+      "blaze",
+      "solar-power"
+    ],
+    "mega_x": {
+      "types": [
+        "fire",
+        "dragon"
+      ],
+      "base_stats": {
+        "hp": 78,
+        "attack": 130,
+        "defense": 111,
+        "sp_attack": 130,
+        "sp_defense": 85,
+        "speed": 100
+      }
+    },
+    "mega_y": {
+      "types": [
+        "fire",
+        "flying"
+      ],
+      "base_stats": {
+        "hp": 78,
+        "attack": 104,
+        "defense": 78,
+        "sp_attack": 159,
+        "sp_defense": 115,
+        "speed": 100
+      }
+    },
+    "weight": 90.5
+  },
+  "blastoise": {
+    "name_ja": "カメックス",
+    "types": [
+      "water"
+    ],
+    "base_stats": {
+      "hp": 79,
+      "attack": 83,
+      "defense": 100,
+      "sp_attack": 85,
+      "sp_defense": 105,
+      "speed": 78
+    },
+    "abilities": [
+      "torrent",
+      "rain-dish"
+    ],
+    "weight": 85.5
+  },
+  "gengar": {
+    "name_ja": "ゲンガー",
+    "types": [
+      "ghost",
+      "poison"
+    ],
+    "base_stats": {
+      "hp": 60,
+      "attack": 65,
+      "defense": 60,
+      "sp_attack": 130,
+      "sp_defense": 75,
+      "speed": 110
+    },
+    "abilities": [
+      "cursed-body"
+    ],
+    "weight": 40.5
+  },
+  "alakazam": {
+    "name_ja": "フーディン",
+    "types": [
+      "psychic"
+    ],
+    "base_stats": {
+      "hp": 55,
+      "attack": 50,
+      "defense": 45,
+      "sp_attack": 135,
+      "sp_defense": 95,
+      "speed": 120
+    },
+    "abilities": [
+      "synchronize",
+      "inner-focus",
+      "magic-guard"
+    ],
+    "weight": 48.0
+  },
+  "machamp": {
+    "name_ja": "カイリキー",
+    "types": [
+      "fighting"
+    ],
+    "base_stats": {
+      "hp": 90,
+      "attack": 130,
+      "defense": 80,
+      "sp_attack": 65,
+      "sp_defense": 85,
+      "speed": 55
+    },
+    "abilities": [
+      "guts",
+      "no-guard",
+      "steadfast"
+    ],
+    "weight": 130.0
+  },
+  "slowbro": {
+    "name_ja": "ヤドラン",
+    "types": [
+      "water",
+      "psychic"
+    ],
+    "base_stats": {
+      "hp": 95,
+      "attack": 75,
+      "defense": 110,
+      "sp_attack": 100,
+      "sp_defense": 80,
+      "speed": 30
+    },
+    "abilities": [
+      "oblivious",
+      "own-tempo",
+      "regenerator"
+    ],
+    "weight": 78.5
+  },
+  "mewtwo": {
+    "name_ja": "ミュウツー",
+    "types": [
+      "psychic"
+    ],
+    "base_stats": {
+      "hp": 106,
+      "attack": 110,
+      "defense": 90,
+      "sp_attack": 154,
+      "sp_defense": 90,
+      "speed": 130
+    },
+    "abilities": [
+      "pressure",
+      "unnerve"
+    ],
+    "mega_x": {
+      "types": [
+        "psychic",
+        "fighting"
+      ],
+      "base_stats": {
+        "hp": 106,
+        "attack": 190,
+        "defense": 100,
+        "sp_attack": 154,
+        "sp_defense": 100,
+        "speed": 130
+      }
+    },
+    "mega_y": {
+      "types": [
+        "psychic"
+      ],
+      "base_stats": {
+        "hp": 106,
+        "attack": 150,
+        "defense": 70,
+        "sp_attack": 194,
+        "sp_defense": 120,
+        "speed": 140
+      }
+    },
+    "weight": 122.0
+  },
+  "dragonite": {
+    "name_ja": "カイリュー",
+    "types": [
+      "dragon",
+      "flying"
+    ],
+    "base_stats": {
+      "hp": 91,
+      "attack": 134,
+      "defense": 95,
+      "sp_attack": 100,
+      "sp_defense": 100,
+      "speed": 80
+    },
+    "abilities": [
+      "inner-focus",
+      "multiscale"
+    ],
+    "weight": 210.0
+  },
+  "tyranitar": {
+    "name_ja": "バンギラス",
+    "types": [
+      "rock",
+      "dark"
+    ],
+    "base_stats": {
+      "hp": 100,
+      "attack": 134,
+      "defense": 110,
+      "sp_attack": 95,
+      "sp_defense": 100,
+      "speed": 61
+    },
+    "abilities": [
+      "sand-stream",
+      "unnerve"
+    ],
+    "weight": 202.0
+  },
+  "scizor": {
+    "name_ja": "ハッサム",
+    "types": [
+      "bug",
+      "steel"
+    ],
+    "base_stats": {
+      "hp": 70,
+      "attack": 130,
+      "defense": 100,
+      "sp_attack": 55,
+      "sp_defense": 80,
+      "speed": 65
+    },
+    "abilities": [
+      "swarm",
+      "technician",
+      "light-metal"
+    ],
+    "weight": 118.0
+  },
+  "heracross": {
+    "name_ja": "ヘラクロス",
+    "types": [
+      "bug",
+      "fighting"
+    ],
+    "base_stats": {
+      "hp": 80,
+      "attack": 125,
+      "defense": 75,
+      "sp_attack": 40,
+      "sp_defense": 95,
+      "speed": 85
+    },
+    "abilities": [
+      "swarm",
+      "guts",
+      "moxie"
+    ],
+    "weight": 54.0
+  },
+  "blissey": {
+    "name_ja": "ハピナス",
+    "types": [
+      "normal"
+    ],
+    "base_stats": {
+      "hp": 255,
+      "attack": 10,
+      "defense": 10,
+      "sp_attack": 75,
+      "sp_defense": 135,
+      "speed": 55
+    },
+    "abilities": [
+      "natural-cure",
+      "serene-grace",
+      "healer"
+    ],
+    "weight": 46.8
+  },
+  "espeon": {
+    "name_ja": "エーフィ",
+    "types": [
+      "psychic"
+    ],
+    "base_stats": {
+      "hp": 65,
+      "attack": 65,
+      "defense": 60,
+      "sp_attack": 130,
+      "sp_defense": 95,
+      "speed": 110
+    },
+    "abilities": [
+      "synchronize",
+      "magic-bounce"
+    ],
+    "weight": 26.5
+  },
+  "umbreon": {
+    "name_ja": "ブラッキー",
+    "types": [
+      "dark"
+    ],
+    "base_stats": {
+      "hp": 95,
+      "attack": 65,
+      "defense": 110,
+      "sp_attack": 60,
+      "sp_defense": 130,
+      "speed": 65
+    },
+    "abilities": [
+      "synchronize",
+      "inner-focus"
+    ],
+    "weight": 27.0
+  },
+  "blaziken": {
+    "name_ja": "バシャーモ",
+    "types": [
+      "fire",
+      "fighting"
+    ],
+    "base_stats": {
+      "hp": 80,
+      "attack": 120,
+      "defense": 70,
+      "sp_attack": 110,
+      "sp_defense": 70,
+      "speed": 80
+    },
+    "abilities": [
+      "blaze",
+      "speed-boost"
+    ],
+    "weight": 52.0
+  },
+  "swampert": {
+    "name_ja": "ラグラージ",
+    "types": [
+      "water",
+      "ground"
+    ],
+    "base_stats": {
+      "hp": 100,
+      "attack": 110,
+      "defense": 90,
+      "sp_attack": 85,
+      "sp_defense": 90,
+      "speed": 60
+    },
+    "abilities": [
+      "torrent",
+      "damp"
+    ],
+    "weight": 81.9
+  },
+  "gardevoir": {
+    "name_ja": "サーナイト",
+    "types": [
+      "psychic",
+      "fairy"
+    ],
+    "base_stats": {
+      "hp": 68,
+      "attack": 65,
+      "defense": 65,
+      "sp_attack": 125,
+      "sp_defense": 115,
+      "speed": 80
+    },
+    "abilities": [
+      "synchronize",
+      "trace",
+      "telepathy"
+    ],
+    "weight": 48.4
+  },
+  "breloom": {
+    "name_ja": "キノガッサ",
+    "types": [
+      "grass",
+      "fighting"
+    ],
+    "base_stats": {
+      "hp": 60,
+      "attack": 130,
+      "defense": 80,
+      "sp_attack": 60,
+      "sp_defense": 60,
+      "speed": 70
+    },
+    "abilities": [
+      "effect-spore",
+      "poison-heal",
+      "technician"
+    ],
+    "weight": 39.2
+  },
+  "salamence": {
+    "name_ja": "ボーマンダ",
+    "types": [
+      "dragon",
+      "flying"
+    ],
+    "base_stats": {
+      "hp": 95,
+      "attack": 135,
+      "defense": 80,
+      "sp_attack": 110,
+      "sp_defense": 80,
+      "speed": 100
+    },
+    "abilities": [
+      "intimidate",
+      "moxie"
+    ],
+    "mega": {
+      "types": [
+        "dragon",
+        "flying"
+      ],
+      "base_stats": {
+        "hp": 95,
+        "attack": 145,
+        "defense": 130,
+        "sp_attack": 120,
+        "sp_defense": 90,
+        "speed": 120
+      }
+    },
+    "weight": 102.6
+  },
+  "metagross": {
+    "name_ja": "メタグロス",
+    "types": [
+      "steel",
+      "psychic"
+    ],
+    "base_stats": {
+      "hp": 80,
+      "attack": 135,
+      "defense": 130,
+      "sp_attack": 95,
+      "sp_defense": 90,
+      "speed": 70
+    },
+    "abilities": [
+      "clear-body",
+      "light-metal"
+    ],
+    "mega": {
+      "types": [
+        "steel",
+        "psychic"
+      ],
+      "base_stats": {
+        "hp": 80,
+        "attack": 145,
+        "defense": 150,
+        "sp_attack": 105,
+        "sp_defense": 110,
+        "speed": 110
+      }
+    },
+    "weight": 550.0
+  },
+  "latias": {
+    "name_ja": "ラティアス",
+    "types": [
+      "dragon",
+      "psychic"
+    ],
+    "base_stats": {
+      "hp": 80,
+      "attack": 80,
+      "defense": 90,
+      "sp_attack": 110,
+      "sp_defense": 130,
+      "speed": 110
+    },
+    "abilities": [
+      "levitate"
+    ],
+    "weight": 37.5
+  },
+  "latios": {
+    "name_ja": "ラティオス",
+    "types": [
+      "dragon",
+      "psychic"
+    ],
+    "base_stats": {
+      "hp": 80,
+      "attack": 90,
+      "defense": 80,
+      "sp_attack": 130,
+      "sp_defense": 110,
+      "speed": 110
+    },
+    "abilities": [
+      "levitate"
+    ],
+    "weight": 60.0
+  },
+  "rayquaza": {
+    "name_ja": "レックウザ",
+    "types": [
+      "dragon",
+      "flying"
+    ],
+    "base_stats": {
+      "hp": 105,
+      "attack": 150,
+      "defense": 90,
+      "sp_attack": 150,
+      "sp_defense": 90,
+      "speed": 95
+    },
+    "abilities": [
+      "air-lock",
+      "cloud-nine"
+    ],
+    "weight": 206.5
+  },
+  "garchomp": {
+    "name_ja": "ガブリアス",
+    "types": [
+      "dragon",
+      "ground"
+    ],
+    "base_stats": {
+      "hp": 108,
+      "attack": 130,
+      "defense": 95,
+      "sp_attack": 80,
+      "sp_defense": 85,
+      "speed": 102
+    },
+    "abilities": [
+      "sand-veil",
+      "rough-skin"
+    ],
+    "weight": 95.0
+  },
+  "lucario": {
+    "name_ja": "ルカリオ",
+    "types": [
+      "fighting",
+      "steel"
+    ],
+    "base_stats": {
+      "hp": 70,
+      "attack": 110,
+      "defense": 70,
+      "sp_attack": 115,
+      "sp_defense": 70,
+      "speed": 90
+    },
+    "abilities": [
+      "steadfast",
+      "inner-focus",
+      "justified"
+    ],
+    "weight": 54.0
+  },
+  "weavile": {
+    "name_ja": "マニューラ",
+    "types": [
+      "dark",
+      "ice"
+    ],
+    "base_stats": {
+      "hp": 70,
+      "attack": 120,
+      "defense": 65,
+      "sp_attack": 45,
+      "sp_defense": 85,
+      "speed": 125
+    },
+    "abilities": [
+      "pressure",
+      "pickpocket"
+    ],
+    "weight": 34.0
+  },
+  "togekiss": {
+    "name_ja": "トゲキッス",
+    "types": [
+      "fairy",
+      "flying"
+    ],
+    "base_stats": {
+      "hp": 85,
+      "attack": 50,
+      "defense": 95,
+      "sp_attack": 120,
+      "sp_defense": 115,
+      "speed": 80
+    },
+    "abilities": [
+      "hustle",
+      "serene-grace",
+      "super-luck"
+    ],
+    "weight": 38.0
+  },
+  "infernape": {
+    "name_ja": "ゴウカザル",
+    "types": [
+      "fire",
+      "fighting"
+    ],
+    "base_stats": {
+      "hp": 76,
+      "attack": 104,
+      "defense": 71,
+      "sp_attack": 104,
+      "sp_defense": 71,
+      "speed": 108
+    },
+    "abilities": [
+      "blaze",
+      "iron-fist"
+    ],
+    "weight": 55.0
+  },
+  "empoleon": {
+    "name_ja": "エンペルト",
+    "types": [
+      "water",
+      "steel"
+    ],
+    "base_stats": {
+      "hp": 84,
+      "attack": 86,
+      "defense": 88,
+      "sp_attack": 111,
+      "sp_defense": 101,
+      "speed": 60
+    },
+    "abilities": [
+      "torrent",
+      "defiant"
+    ],
+    "weight": 84.5
+  },
+  "chandelure": {
+    "name_ja": "シャンデラ",
+    "types": [
+      "ghost",
+      "fire"
+    ],
+    "base_stats": {
+      "hp": 60,
+      "attack": 55,
+      "defense": 90,
+      "sp_attack": 145,
+      "sp_defense": 90,
+      "speed": 80
+    },
+    "abilities": [
+      "flash-fire",
+      "flame-body",
+      "infiltrator"
+    ],
+    "weight": 34.3
+  },
+  "excadrill": {
+    "name_ja": "ドリュウズ",
+    "types": [
+      "ground",
+      "steel"
+    ],
+    "base_stats": {
+      "hp": 110,
+      "attack": 135,
+      "defense": 60,
+      "sp_attack": 50,
+      "sp_defense": 65,
+      "speed": 88
+    },
+    "abilities": [
+      "sand-rush",
+      "sand-force",
+      "mold-breaker"
+    ],
+    "weight": 40.4
+  },
+  "conkeldurr": {
+    "name_ja": "ローブシン",
+    "types": [
+      "fighting"
+    ],
+    "base_stats": {
+      "hp": 105,
+      "attack": 140,
+      "defense": 95,
+      "sp_attack": 55,
+      "sp_defense": 65,
+      "speed": 45
+    },
+    "abilities": [
+      "guts",
+      "sheer-force",
+      "iron-fist"
+    ],
+    "weight": 87.0
+  },
+  "landorus-t": {
+    "name_ja": "ランドロス(霊獣)",
+    "types": [
+      "ground",
+      "flying"
+    ],
+    "base_stats": {
+      "hp": 89,
+      "attack": 145,
+      "defense": 90,
+      "sp_attack": 105,
+      "sp_defense": 80,
+      "speed": 91
+    },
+    "abilities": [
+      "intimidate"
+    ],
+    "weight": 68.0
+  },
+  "thundurus-t": {
+    "name_ja": "ボルトロス(霊獣)",
+    "types": [
+      "electric",
+      "flying"
+    ],
+    "base_stats": {
+      "hp": 79,
+      "attack": 105,
+      "defense": 70,
+      "sp_attack": 145,
+      "sp_defense": 80,
+      "speed": 101
+    },
+    "abilities": [
+      "volt-absorb"
+    ],
+    "weight": 61.0
+  },
+  "kyurem-w": {
+    "name_ja": "キュレム(ホワイト)",
+    "types": [
+      "dragon",
+      "ice"
+    ],
+    "base_stats": {
+      "hp": 125,
+      "attack": 120,
+      "defense": 90,
+      "sp_attack": 170,
+      "sp_defense": 100,
+      "speed": 95
+    },
+    "abilities": [
+      "turboblaze"
+    ],
+    "weight": 325.0
+  },
+  "greninja": {
+    "name_ja": "ゲッコウガ",
+    "types": [
+      "water",
+      "dark"
+    ],
+    "base_stats": {
+      "hp": 72,
+      "attack": 95,
+      "defense": 67,
+      "sp_attack": 103,
+      "sp_defense": 71,
+      "speed": 122
+    },
+    "abilities": [
+      "torrent",
+      "protean",
+      "battle-bond"
+    ],
+    "weight": 40.0
+  },
+  "talonflame": {
+    "name_ja": "ファイアロー",
+    "types": [
+      "fire",
+      "flying"
+    ],
+    "base_stats": {
+      "hp": 78,
+      "attack": 81,
+      "defense": 71,
+      "sp_attack": 74,
+      "sp_defense": 69,
+      "speed": 126
+    },
+    "abilities": [
+      "flame-body",
+      "gale-wings"
+    ],
+    "weight": 24.5
+  },
+  "aegislash": {
+    "name_ja": "ギルガルド",
+    "types": [
+      "steel",
+      "ghost"
+    ],
+    "base_stats": {
+      "hp": 60,
+      "attack": 50,
+      "defense": 140,
+      "sp_attack": 50,
+      "sp_defense": 140,
+      "speed": 60
+    },
+    "abilities": [
+      "stance-change"
+    ],
+    "blade": {
+      "types": [
+        "steel",
+        "ghost"
+      ],
+      "base_stats": {
+        "hp": 60,
+        "attack": 140,
+        "defense": 50,
+        "sp_attack": 140,
+        "sp_defense": 50,
+        "speed": 60
+      }
+    },
+    "weight": 53.0
+  },
+  "sylveon": {
+    "name_ja": "ニンフィア",
+    "types": [
+      "fairy"
+    ],
+    "base_stats": {
+      "hp": 95,
+      "attack": 65,
+      "defense": 65,
+      "sp_attack": 110,
+      "sp_defense": 130,
+      "speed": 60
+    },
+    "abilities": [
+      "cute-charm",
+      "pixilate"
+    ],
+    "weight": 23.5
+  },
+  "toxapex": {
+    "name_ja": "ドヒドイデ",
+    "types": [
+      "poison",
+      "water"
+    ],
+    "base_stats": {
+      "hp": 50,
+      "attack": 63,
+      "defense": 152,
+      "sp_attack": 53,
+      "sp_defense": 142,
+      "speed": 35
+    },
+    "abilities": [
+      "merciless",
+      "limber",
+      "regenerator"
+    ],
+    "weight": 14.5
+  },
+  "mimikyu": {
+    "name_ja": "ミミッキュ",
+    "types": [
+      "ghost",
+      "fairy"
+    ],
+    "base_stats": {
+      "hp": 55,
+      "attack": 90,
+      "defense": 80,
+      "sp_attack": 50,
+      "sp_defense": 105,
+      "speed": 96
+    },
+    "abilities": [
+      "disguise"
+    ],
+    "weight": 0.7
+  },
+  "tapu-koko": {
+    "name_ja": "カプ・コケコ",
+    "types": [
+      "electric",
+      "fairy"
+    ],
+    "base_stats": {
+      "hp": 70,
+      "attack": 115,
+      "defense": 85,
+      "sp_attack": 95,
+      "sp_defense": 75,
+      "speed": 130
+    },
+    "abilities": [
+      "electric-surge",
+      "telepathy"
+    ],
+    "weight": 20.5
+  },
+  "tapu-lele": {
+    "name_ja": "カプ・テテフ",
+    "types": [
+      "psychic",
+      "fairy"
+    ],
+    "base_stats": {
+      "hp": 70,
+      "attack": 85,
+      "defense": 75,
+      "sp_attack": 130,
+      "sp_defense": 115,
+      "speed": 95
+    },
+    "abilities": [
+      "psychic-surge",
+      "telepathy"
+    ],
+    "weight": 18.6
+  },
+  "kartana": {
+    "name_ja": "カミツルギ",
+    "types": [
+      "grass",
+      "steel"
+    ],
+    "base_stats": {
+      "hp": 59,
+      "attack": 181,
+      "defense": 131,
+      "sp_attack": 59,
+      "sp_defense": 31,
+      "speed": 109
+    },
+    "abilities": [
+      "beast-boost"
+    ],
+    "weight": 0.1
+  },
+  "dragapult": {
+    "name_ja": "ドラパルト",
+    "types": [
+      "dragon",
+      "ghost"
+    ],
+    "base_stats": {
+      "hp": 88,
+      "attack": 120,
+      "defense": 75,
+      "sp_attack": 100,
+      "sp_defense": 75,
+      "speed": 142
+    },
+    "abilities": [
+      "clear-body",
+      "infiltrator",
+      "cursed-body"
+    ],
+    "weight": 50.0
+  },
+  "urshifu-s": {
+    "name_ja": "ウーラオス(一撃)",
+    "types": [
+      "fighting",
+      "dark"
+    ],
+    "base_stats": {
+      "hp": 100,
+      "attack": 130,
+      "defense": 100,
+      "sp_attack": 63,
+      "sp_defense": 60,
+      "speed": 97
+    },
+    "abilities": [
+      "unseen-fist"
+    ],
+    "weight": 105.0
+  },
+  "urshifu-r": {
+    "name_ja": "ウーラオス(連撃)",
+    "types": [
+      "fighting",
+      "water"
+    ],
+    "base_stats": {
+      "hp": 100,
+      "attack": 130,
+      "defense": 100,
+      "sp_attack": 63,
+      "sp_defense": 60,
+      "speed": 97
+    },
+    "abilities": [
+      "unseen-fist"
+    ],
+    "weight": 105.0
+  },
+  "zacian-c": {
+    "name_ja": "ザシアン(王)",
+    "types": [
+      "fairy",
+      "steel"
+    ],
+    "base_stats": {
+      "hp": 92,
+      "attack": 170,
+      "defense": 115,
+      "sp_attack": 80,
+      "sp_defense": 115,
+      "speed": 148
+    },
+    "abilities": [
+      "intrepid-sword"
+    ],
+    "weight": 355.0
+  },
+  "zamazenta-c": {
+    "name_ja": "ザマゼンタ(王)",
+    "types": [
+      "fighting",
+      "steel"
+    ],
+    "base_stats": {
+      "hp": 92,
+      "attack": 130,
+      "defense": 145,
+      "sp_attack": 80,
+      "sp_defense": 145,
+      "speed": 128
+    },
+    "abilities": [
+      "dauntless-shield"
+    ],
+    "weight": 785.0
+  },
+  "calyrex-ice": {
+    "name_ja": "バドレックス(白馬)",
+    "types": [
+      "psychic",
+      "ice"
+    ],
+    "base_stats": {
+      "hp": 100,
+      "attack": 165,
+      "defense": 150,
+      "sp_attack": 85,
+      "sp_defense": 130,
+      "speed": 50
+    },
+    "abilities": [
+      "as-one-glastrier"
+    ],
+    "weight": 809.1
+  },
+  "calyrex-shadow": {
+    "name_ja": "バドレックス(黒馬)",
+    "types": [
+      "psychic",
+      "ghost"
+    ],
+    "base_stats": {
+      "hp": 100,
+      "attack": 85,
+      "defense": 80,
+      "sp_attack": 165,
+      "sp_defense": 100,
+      "speed": 150
+    },
+    "abilities": [
+      "as-one-spectrier"
+    ],
+    "weight": 53.6
+  },
+  "koraidon": {
+    "name_ja": "コライドン",
+    "types": [
+      "fighting",
+      "dragon"
+    ],
+    "base_stats": {
+      "hp": 100,
+      "attack": 135,
+      "defense": 115,
+      "sp_attack": 85,
+      "sp_defense": 100,
+      "speed": 135
+    },
+    "abilities": [
+      "orichalcum-pulse"
+    ],
+    "weight": 303.0
+  },
+  "miraidon": {
+    "name_ja": "ミライドン",
+    "types": [
+      "electric",
+      "dragon"
+    ],
+    "base_stats": {
+      "hp": 100,
+      "attack": 85,
+      "defense": 100,
+      "sp_attack": 135,
+      "sp_defense": 115,
+      "speed": 135
+    },
+    "abilities": [
+      "hadron-engine"
+    ],
+    "weight": 240.0
+  },
+  "iron-bundle": {
+    "name_ja": "テツノツツミ",
+    "types": [
+      "ice",
+      "water"
+    ],
+    "base_stats": {
+      "hp": 56,
+      "attack": 80,
+      "defense": 114,
+      "sp_attack": 124,
+      "sp_defense": 60,
+      "speed": 136
+    },
+    "abilities": [
+      "quark-drive"
+    ],
+    "weight": 56.0
+  },
+  "iron-hands": {
+    "name_ja": "テツノカシラ",
+    "types": [
+      "fighting",
+      "electric"
+    ],
+    "base_stats": {
+      "hp": 154,
+      "attack": 140,
+      "defense": 108,
+      "sp_attack": 50,
+      "sp_defense": 68,
+      "speed": 50
+    },
+    "abilities": [
+      "quark-drive"
+    ],
+    "weight": 380.7
+  },
+  "gholdengo": {
+    "name_ja": "サーフゴー",
+    "types": [
+      "steel",
+      "ghost"
+    ],
+    "base_stats": {
+      "hp": 87,
+      "attack": 60,
+      "defense": 95,
+      "sp_attack": 133,
+      "sp_defense": 91,
+      "speed": 84
+    },
+    "abilities": [
+      "good-as-gold"
+    ],
+    "weight": 30.0
+  },
+  "iron-valiant": {
+    "name_ja": "テツノブジン",
+    "types": [
+      "fairy",
+      "fighting"
+    ],
+    "base_stats": {
+      "hp": 74,
+      "attack": 130,
+      "defense": 90,
+      "sp_attack": 120,
+      "sp_defense": 60,
+      "speed": 116
+    },
+    "abilities": [
+      "quark-drive"
+    ],
+    "weight": 35.0
+  },
+  "chi-yu": {
+    "name_ja": "チヲハウハネ",
+    "types": [
+      "fire",
+      "dark"
+    ],
+    "base_stats": {
+      "hp": 55,
+      "attack": 80,
+      "defense": 80,
+      "sp_attack": 135,
+      "sp_defense": 120,
+      "speed": 100
+    },
+    "abilities": [
+      "beads-of-ruin"
+    ],
+    "weight": 4.9
+  },
+  "chien-pao": {
+    "name_ja": "パオジアン",
+    "types": [
+      "dark",
+      "ice"
+    ],
+    "base_stats": {
+      "hp": 80,
+      "attack": 120,
+      "defense": 80,
+      "sp_attack": 90,
+      "sp_defense": 65,
+      "speed": 135
+    },
+    "abilities": [
+      "sword-of-ruin"
+    ],
+    "weight": 152.2
+  },
+  "ting-lu": {
+    "name_ja": "ディンルー",
+    "types": [
+      "dark",
+      "ground"
+    ],
+    "base_stats": {
+      "hp": 155,
+      "attack": 110,
+      "defense": 125,
+      "sp_attack": 55,
+      "sp_defense": 80,
+      "speed": 45
+    },
+    "abilities": [
+      "vessel-of-ruin"
+    ],
+    "weight": 699.7
+  },
+  "wo-chien": {
+    "name_ja": "チオンジェン",
+    "types": [
+      "dark",
+      "grass"
+    ],
+    "base_stats": {
+      "hp": 85,
+      "attack": 85,
+      "defense": 100,
+      "sp_attack": 95,
+      "sp_defense": 135,
+      "speed": 70
+    },
+    "abilities": [
+      "tablets-of-ruin"
+    ],
+    "weight": 74.2
+  },
+  "kyogre": {
+    "name_ja": "カイオーガ",
+    "types": [
+      "water"
+    ],
+    "base_stats": {
+      "hp": 100,
+      "attack": 100,
+      "defense": 90,
+      "sp_attack": 150,
+      "sp_defense": 140,
+      "speed": 90
+    },
+    "abilities": [
+      "drizzle",
+      "primordial-sea"
+    ],
+    "weight": 352.0
+  },
+  "groudon": {
+    "name_ja": "グラードン",
+    "types": [
+      "ground"
+    ],
+    "base_stats": {
+      "hp": 100,
+      "attack": 150,
+      "defense": 140,
+      "sp_attack": 100,
+      "sp_defense": 90,
+      "speed": 90
+    },
+    "abilities": [
+      "drought",
+      "desolate-land"
+    ],
+    "weight": 950.0
+  },
+  "rillaboom": {
+    "name_ja": "ゴリランダー",
+    "types": [
+      "grass"
+    ],
+    "base_stats": {
+      "hp": 100,
+      "attack": 125,
+      "defense": 90,
+      "sp_attack": 60,
+      "sp_defense": 70,
+      "speed": 85
+    },
+    "abilities": [
+      "overgrow",
+      "grassy-surge"
+    ],
+    "weight": 90.0
+  },
+  "cinderace": {
+    "name_ja": "エースバーン",
+    "types": [
+      "fire"
+    ],
+    "base_stats": {
+      "hp": 80,
+      "attack": 116,
+      "defense": 75,
+      "sp_attack": 65,
+      "sp_defense": 75,
+      "speed": 119
+    },
+    "abilities": [
+      "blaze",
+      "libero"
+    ],
+    "weight": 33.0
+  },
+  "gyarados": {
+    "name_ja": "ギャラドス",
+    "types": [
+      "water",
+      "flying"
+    ],
+    "base_stats": {
+      "hp": 95,
+      "attack": 125,
+      "defense": 79,
+      "sp_attack": 60,
+      "sp_defense": 100,
+      "speed": 81
+    },
+    "abilities": [
+      "intimidate",
+      "moxie"
+    ],
+    "weight": 235.0
+  },
+  "hippowdon": {
+    "name_ja": "カバルドン",
+    "types": [
+      "ground"
+    ],
+    "base_stats": {
+      "hp": 108,
+      "attack": 112,
+      "defense": 118,
+      "sp_attack": 68,
+      "sp_defense": 72,
+      "speed": 47
+    },
+    "abilities": [
+      "sand-stream",
+      "sand-force"
+    ],
+    "weight": 300.0
+  },
+  "ferrothorn": {
+    "name_ja": "ナットレイ",
+    "types": [
+      "grass",
+      "steel"
+    ],
+    "base_stats": {
+      "hp": 74,
+      "attack": 94,
+      "defense": 131,
+      "sp_attack": 54,
+      "sp_defense": 116,
+      "speed": 20
+    },
+    "abilities": [
+      "iron-barbs",
+      "anticipation"
+    ],
+    "weight": 110.0
+  },
+  "heatran": {
+    "name_ja": "ヒードラン",
+    "types": [
+      "fire",
+      "steel"
+    ],
+    "base_stats": {
+      "hp": 91,
+      "attack": 90,
+      "defense": 106,
+      "sp_attack": 130,
+      "sp_defense": 106,
+      "speed": 77
+    },
+    "abilities": [
+      "flash-fire",
+      "flame-body"
+    ],
+    "weight": 430.0
+  },
+  "rotom-w": {
+    "name_ja": "ロトム(ウォッシュ)",
+    "types": [
+      "electric",
+      "water"
+    ],
+    "base_stats": {
+      "hp": 50,
+      "attack": 65,
+      "defense": 107,
+      "sp_attack": 105,
+      "sp_defense": 107,
+      "speed": 86
+    },
+    "abilities": [
+      "levitate"
+    ],
+    "weight": 0.3
+  },
+  "kyurem-b": {
+    "name_ja": "キュレム(ブラック)",
+    "types": [
+      "dragon",
+      "ice"
+    ],
+    "base_stats": {
+      "hp": 125,
+      "attack": 170,
+      "defense": 100,
+      "sp_attack": 120,
+      "sp_defense": 90,
+      "speed": 95
+    },
+    "abilities": [
+      "teravolt"
+    ],
+    "weight": 325.0
+  },
+  "landorus-i": {
+    "name_ja": "ランドロス(化身)",
+    "types": [
+      "ground",
+      "flying"
+    ],
+    "base_stats": {
+      "hp": 89,
+      "attack": 125,
+      "defense": 90,
+      "sp_attack": 115,
+      "sp_defense": 80,
+      "speed": 101
+    },
+    "abilities": [
+      "sand-force",
+      "sheer-force"
+    ],
+    "weight": 68.0
+  }
 }
