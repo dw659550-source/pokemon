@@ -107,3 +107,58 @@ def capture_primary_monitor():
     except Exception as e:
         logger.error("capture_primary_monitor: %s", e)
         return None
+
+
+def capture_window_direct(title: str):
+    """
+    PrintWindow API でウィンドウの内容を直接キャプチャ。
+    他のウィンドウが重なっていても正しく取得できる。
+    pywin32 が必要: pip install pywin32
+    """
+    if not HAS_PIL:
+        return None
+    try:
+        import win32gui
+        import win32ui
+    except ImportError:
+        logger.warning("pywin32 が必要: pip install pywin32")
+        return None
+    try:
+        # タイトル部分一致でHWND検索
+        found = []
+        def _cb(hwnd, _):
+            if title.lower() in win32gui.GetWindowText(hwnd).lower():
+                found.append(hwnd)
+        win32gui.EnumWindows(_cb, None)
+        if not found:
+            return None
+        hwnd = found[0]
+
+        rect = win32gui.GetClientRect(hwnd)
+        w, h = rect[2], rect[3]
+        if w <= 0 or h <= 0:
+            return None
+
+        hwnd_dc   = win32gui.GetWindowDC(hwnd)
+        mfc_dc    = win32ui.CreateDCFromHandle(hwnd_dc)
+        save_dc   = mfc_dc.CreateCompatibleDC()
+        bmp       = win32ui.CreateBitmap()
+        bmp.CreateCompatibleBitmap(mfc_dc, w, h)
+        save_dc.SelectObject(bmp)
+
+        PW_RENDERFULLCONTENT = 0x00000002
+        win32gui.PrintWindow(hwnd, save_dc.GetSafeHdc(), PW_RENDERFULLCONTENT)
+
+        info   = bmp.GetInfo()
+        raw    = bmp.GetBitmapBits(True)
+        img    = Image.frombuffer("RGB", (info["bmWidth"], info["bmHeight"]),
+                                  raw, "raw", "BGRX", 0, 1)
+
+        save_dc.DeleteDC()
+        mfc_dc.DeleteDC()
+        win32gui.ReleaseDC(hwnd, hwnd_dc)
+        win32gui.DeleteObject(bmp.GetHandle())
+        return img
+    except Exception as e:
+        logger.error("capture_window_direct: %s", e)
+        return None

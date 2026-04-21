@@ -204,6 +204,17 @@ class BattleMonitor(QThread):
     def _grab_frame(self, sct, mon):
         """ウィンドウ or モニターをキャプチャして BGR numpy array を返す。失敗時は None。"""
         if self._window_title:
+            # PrintWindow で直接キャプチャ（重なっていても正しく取得）
+            try:
+                from capture.screen_capture import capture_window_direct
+                import cv2 as _cv2
+                img = capture_window_direct(self._window_title)
+                if img is not None:
+                    arr = np.array(img)
+                    return _cv2.cvtColor(arr, _cv2.COLOR_RGB2BGR)
+            except Exception:
+                pass
+            # フォールバック: mss でウィンドウ座標を使用
             try:
                 import pygetwindow as gw
                 wins = gw.getWindowsWithTitle(self._window_title)
@@ -215,11 +226,12 @@ class BattleMonitor(QThread):
                 region = {"left": w.left, "top": w.top,
                           "width": w.width, "height": w.height}
                 shot = sct.grab(region)
+                return np.array(shot)[:, :, :3]
             except Exception:
                 return None
         else:
             shot = sct.grab(mon)
-        return np.array(shot)[:, :, :3]
+            return np.array(shot)[:, :, :3]
 
     def run(self):
         try:
