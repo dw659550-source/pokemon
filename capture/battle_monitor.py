@@ -153,13 +153,24 @@ def match_pokemon_name(text: str) -> tuple[str, str] | tuple[None, None]:
 # ── BattleMonitor ─────────────────────────────────────────────────────────────
 
 def _ocr_preprocess(crop_bgr, cv2_mod, np_mod):
-    """白文字を抽出して3倍拡大した画像を返す"""
+    """白文字(低彩度)を抽出して3倍拡大した画像を返す（相手名用）"""
     hsv  = cv2_mod.cvtColor(crop_bgr, cv2_mod.COLOR_BGR2HSV)
     s, v = hsv[:, :, 1], hsv[:, :, 2]
     mask = ((np_mod.array(s) < 60) & (np_mod.array(v) > 150)).astype("uint8") * 255
     return cv2_mod.resize(
         mask,
         (mask.shape[1] * 3, mask.shape[0] * 3),
+        interpolation=cv2_mod.INTER_NEAREST,
+    )
+
+
+def _ocr_preprocess_own(crop_bgr, cv2_mod):
+    """グレースケール+大津法閾値で3倍拡大（自分名用・色に依存しない）"""
+    gray = cv2_mod.cvtColor(crop_bgr, cv2_mod.COLOR_BGR2GRAY)
+    _, thresh = cv2_mod.threshold(gray, 0, 255, cv2_mod.THRESH_BINARY + cv2_mod.THRESH_OTSU)
+    return cv2_mod.resize(
+        thresh,
+        (thresh.shape[1] * 3, thresh.shape[0] * 3),
         interpolation=cv2_mod.INTER_NEAREST,
     )
 
@@ -262,7 +273,7 @@ class BattleMonitor(QThread):
                         on3 = min(w, int(w * ox2) + pad)
                         on4 = min(h, int(h * cfg["own_name_y2"]) + 8)
                         own_crop = frame[on2:on4, on1:on3]
-                        proc2 = _ocr_preprocess(own_crop, _cv2, _np)
+                        proc2 = _ocr_preprocess_own(own_crop, _cv2)
                         texts2 = reader.readtext(proc2, detail=0)
                         text2  = "".join(texts2).strip()
                         if text2 and text2 != self._prev_own:
