@@ -237,9 +237,9 @@ class BattleMonitor(QThread):
                     if key:
                         self._prev_name = text
                         self.opponent_changed.emit(key, name_ja)
-                        self.status_changed.emit(f"検出: {name_ja}")
+                        self.status_changed.emit(f"検出: {name_ja}  [OCR: {text}]")
                     else:
-                        logger.debug("マッチなし: %r", text)
+                        self.status_changed.emit(f"マッチなし: [{text}]")
 
                 except Exception as e:
                     logger.error("監視エラー: %s", e)
