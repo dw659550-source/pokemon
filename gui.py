@@ -559,7 +559,7 @@ class EVWidget(QWidget):
             lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
             lbl.setStyleSheet("font-size:10px; color:#555;")
             spin = QSpinBox()
-            spin.setRange(0, 252)
+            spin.setRange(0, 32)
             spin.setFixedWidth(52)
             spin.valueChanged.connect(self.changed.emit)
             col.addWidget(lbl)
@@ -622,17 +622,11 @@ class PokemonPanel(QGroupBox):
         root.setSpacing(3)
         root.setContentsMargins(4, 6, 4, 4)
 
-        # ── ポケモン名 + レベル ──
+        # ── ポケモン名 ──
         r = QHBoxLayout()
         r.setSpacing(4)
         self.pokemon_cb = SearchableComboBox(POKEMON_LIST)
         r.addWidget(self.pokemon_cb, 1)
-        r.addWidget(QLabel("Lv"))
-        self.level_spin = QSpinBox()
-        self.level_spin.setRange(1, 100)
-        self.level_spin.setValue(50)
-        self.level_spin.setFixedWidth(44)
-        r.addWidget(self.level_spin)
         root.addLayout(r)
 
         # ── タイプ表示 ──
@@ -683,18 +677,13 @@ class PokemonPanel(QGroupBox):
             self.move_cbs.append(cb)
         root.addWidget(move_grp)
 
-        # ── EV ──
-        ev_grp = QGroupBox("EV")
+        # ── 能力ポイント (AP 0-32) ──
+        ev_grp = QGroupBox("能力ポイント (0〜32)")
         ev_lay = QVBoxLayout(ev_grp)
         ev_lay.setContentsMargins(4, 4, 4, 4)
         self.ev_widget = EVWidget()
         ev_lay.addWidget(self.ev_widget)
         root.addWidget(ev_grp)
-
-        # ── IV ──
-        self.iv_max_cb = QCheckBox("個体値 全31")
-        self.iv_max_cb.setChecked(True)
-        root.addWidget(self.iv_max_cb)
 
         # ── ステータス表示 ──
         stat_grp = QGroupBox("実数値")
@@ -708,7 +697,6 @@ class PokemonPanel(QGroupBox):
 
     def _connect(self):
         self.pokemon_cb.currentIndexChanged.connect(self._on_pokemon_changed)
-        self.level_spin.valueChanged.connect(self._fire)
         self.nature_cb.currentIndexChanged.connect(self._fire)
         self.item_cb.currentIndexChanged.connect(self._fire)
         self.ability_edit.textChanged.connect(self._fire)
@@ -716,7 +704,6 @@ class PokemonPanel(QGroupBox):
         for cb in self.move_cbs:
             cb.currentIndexChanged.connect(self._fire)
         self.ev_widget.changed.connect(self._fire)
-        self.iv_max_cb.stateChanged.connect(self._fire)
 
     def _on_pokemon_changed(self):
         key = self.pokemon_cb.current_key()
@@ -767,17 +754,14 @@ class PokemonPanel(QGroupBox):
         ability = self.ability_edit.text().strip() or self.ability_edit.placeholderText()
         moves   = [cb.current_key() for cb in self.move_cbs if cb.current_key()]
         evs     = self.ev_widget.get_evs()
-        iv_val  = 31 if self.iv_max_cb.isChecked() else 0
         is_mega = self.mega_cb.isVisible() and self.mega_cb.isChecked()
         mega_form = (self.mega_cb.property("mega_form") or "") if is_mega else ""
         return PokemonBuild(
-            species=species, level=self.level_spin.value(),
+            species=species,
             nature=nature, item=item, ability=ability, moves=moves,
             ev_hp=evs["hp"],       ev_attack=evs["attack"],
             ev_defense=evs["defense"], ev_sp_attack=evs["sp_attack"],
             ev_sp_defense=evs["sp_defense"], ev_speed=evs["speed"],
-            iv_hp=iv_val, iv_attack=iv_val, iv_defense=iv_val,
-            iv_sp_attack=iv_val, iv_sp_defense=iv_val, iv_speed=iv_val,
             is_mega=is_mega, mega_form=mega_form,
         )
 

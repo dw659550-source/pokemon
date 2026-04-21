@@ -12,21 +12,13 @@ class PokemonBuild:
     ability: str = ""
     moves: list[str] = field(default_factory=list)  # moves.jsonのキー×4
 
-    # 努力値 (EV) 0–252 each, 合計510以内
+    # 能力ポイント (AP) 0–32 each（チャンピオンズ独自仕様）
     ev_hp:        int = 0
     ev_attack:    int = 0
     ev_defense:   int = 0
     ev_sp_attack: int = 0
     ev_sp_defense:int = 0
     ev_speed:     int = 0
-
-    # 個体値 (IV) 0–31
-    iv_hp:        int = 31
-    iv_attack:    int = 31
-    iv_defense:   int = 31
-    iv_sp_attack: int = 31
-    iv_sp_defense:int = 31
-    iv_speed:     int = 31
 
     is_mega: bool = False         # メガシンカ状態か
     mega_form: str = ""           # "mega" / "mega_x" / "mega_y" など

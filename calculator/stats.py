@@ -23,15 +23,16 @@ def _nature_multiplier(nature: str, stat: str) -> float:
     return 1.0
 
 
-def calculate_stat(base: int, iv: int, ev: int, level: int,
-                   nature: str, stat: str) -> int:
-    """個別ステータス計算 (Gen6+ 標準式)"""
+def calculate_stat(base: int, ap: int, nature: str, stat: str) -> int:
+    """個別ステータス計算（チャンピオンズ式）
+    HP：種族値 + 75 + AP
+    他：(種族値 + 20 + AP) × 性格補正
+    AP は 0〜32
+    """
     if stat == "hp":
-        # シェディンジャは HP=1 固定だが Phase1 では省略
-        return math.floor((2 * base + iv + math.floor(ev / 4)) * level / 100) + level + 10
+        return base + 75 + ap
     else:
-        raw = math.floor((2 * base + iv + math.floor(ev / 4)) * level / 100) + 5
-        return math.floor(raw * _nature_multiplier(nature, stat))
+        return math.floor((base + 20 + ap) * _nature_multiplier(nature, stat))
 
 
 def calculate_all_stats(build, pokemon_data: dict | None = None) -> dict[str, int]:
@@ -48,7 +49,7 @@ def calculate_all_stats(build, pokemon_data: dict | None = None) -> dict[str, in
         form_data = pokemon_data.get(build.mega_form, {})
         base = form_data.get("base_stats", base)
 
-    ev_map = {
+    ap_map = {
         "hp":        build.ev_hp,
         "attack":    build.ev_attack,
         "defense":   build.ev_defense,
@@ -56,18 +57,9 @@ def calculate_all_stats(build, pokemon_data: dict | None = None) -> dict[str, in
         "sp_defense":build.ev_sp_defense,
         "speed":     build.ev_speed,
     }
-    iv_map = {
-        "hp":        build.iv_hp,
-        "attack":    build.iv_attack,
-        "defense":   build.iv_defense,
-        "sp_attack": build.iv_sp_attack,
-        "sp_defense":build.iv_sp_defense,
-        "speed":     build.iv_speed,
-    }
 
     return {
-        s: calculate_stat(base.get(s, 0), iv_map[s], ev_map[s],
-                          build.level, build.nature, s)
+        s: calculate_stat(base.get(s, 0), ap_map[s], build.nature, s)
         for s in STAT_KEYS
     }
 
