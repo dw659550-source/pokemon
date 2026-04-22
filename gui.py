@@ -1251,12 +1251,85 @@ def _dict_to_build(species: str, d: dict) -> "PokemonBuild":
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# アクティブパーティバー（自動検出タブ用）
+# ─────────────────────────────────────────────────────────────────────────────
+
+class ActivePartyBar(QGroupBox):
+    """対戦中のパーティ選択＋ワンクリックでビルドを送るバー"""
+    send_to_atk = pyqtSignal(object)  # PokemonBuild
+
+    def __init__(self, parent=None):
+        super().__init__("使用パーティ", parent)
+        self._data: dict = _load_my_builds()
+
+        layout = QHBoxLayout(self)
+        layout.setSpacing(6)
+
+        self.party_cb = QComboBox()
+        self.party_cb.setMinimumWidth(140)
+        self.party_cb.currentTextChanged.connect(self._on_party_changed)
+        layout.addWidget(self.party_cb)
+
+        self._slot_btns: list[QPushButton] = []
+        for i in range(6):
+            btn = QPushButton(f"空{i+1}")
+            btn.setFixedWidth(88)
+            btn.setEnabled(False)
+            btn.clicked.connect(lambda _, idx=i: self._send_slot(idx))
+            self._slot_btns.append(btn)
+            layout.addWidget(btn)
+
+        layout.addStretch()
+
+        self.refresh()
+
+    def refresh(self):
+        """登録タブが保存したあとに呼び出してデータを再読込する"""
+        self._data = _load_my_builds()
+        prev = self.party_cb.currentText()
+        self.party_cb.blockSignals(True)
+        self.party_cb.clear()
+        for name in self._data.get("parties", {}):
+            self.party_cb.addItem(name)
+        idx = self.party_cb.findText(prev)
+        self.party_cb.setCurrentIndex(max(0, idx))
+        self.party_cb.blockSignals(False)
+        self._on_party_changed(self.party_cb.currentText())
+
+    def _on_party_changed(self, name: str):
+        slots = self._data.get("parties", {}).get(name, [""] * 6)
+        for i, btn in enumerate(self._slot_btns):
+            key = slots[i] if i < len(slots) else ""
+            if key:
+                name_ja = _POKEMON.get(key, {}).get("name_ja", key)
+                btn.setText(name_ja)
+                btn.setEnabled(True)
+            else:
+                btn.setText(f"空{i+1}")
+                btn.setEnabled(False)
+
+    def _send_slot(self, idx: int):
+        name = self.party_cb.currentText()
+        slots = self._data.get("parties", {}).get(name, [])
+        key = slots[idx] if idx < len(slots) else ""
+        if not key:
+            return
+        d = self._data.get("builds", {}).get(key)
+        if d:
+            self.send_to_atk.emit(_dict_to_build(key, d))
+
+    def active_party_name(self) -> str:
+        return self.party_cb.currentText()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # ポケモン登録タブ
 # ─────────────────────────────────────────────────────────────────────────────
 
 class BuildRegistrationTab(QWidget):
     """マイポケモン型登録・パーティ管理タブ"""
     send_to_atk = pyqtSignal(object)  # PokemonBuild
+    data_saved  = pyqtSignal()        # ビルドまたはパーティ保存時
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -1444,6 +1517,7 @@ class BuildRegistrationTab(QWidget):
             cb.currentData() or "" for cb in self._slot_cbs
         ]
         _save_my_builds(self._data)
+        self.data_saved.emit()
 
     def _send_slot(self, idx: int):
         key = self._slot_cbs[idx].currentData()
@@ -1472,6 +1546,7 @@ class BuildRegistrationTab(QWidget):
         memo = self.memo_edit.toPlainText()
         self._data.setdefault("builds", {})[build.species] = _build_to_dict(build, memo)
         _save_my_builds(self._data)
+        self.data_saved.emit()
         self._current_species = build.species
         self._refresh_poke_list()
         self._refresh_slot_cbs()
@@ -1613,6 +1688,10 @@ class MainWindow(QMainWindow):
         cap_layout.setSpacing(8)
         cap_layout.setContentsMargins(0, 4, 0, 0)
 
+        self.active_party_bar = ActivePartyBar()
+        self.active_party_bar.send_to_atk.connect(self._on_reg_send_to_atk)
+        cap_layout.addWidget(self.active_party_bar)
+
         self.battle_monitor_widget = BattleMonitorWidget()
         self.battle_monitor_widget.opponent_detected.connect(self._on_battle_detected)
         self.battle_monitor_widget.own_detected.connect(self._on_own_battle_detected)
@@ -1631,6 +1710,7 @@ class MainWindow(QMainWindow):
         # ── Tab 3: ポケモン登録 ──
         self.reg_tab = BuildRegistrationTab()
         self.reg_tab.send_to_atk.connect(self._on_reg_send_to_atk)
+        self.reg_tab.data_saved.connect(self.active_party_bar.refresh)
         self._tabs.addTab(self.reg_tab, "ポケモン登録")
 
         self.statusBar().showMessage("準備完了  —  ポケモンと技を選ぶと自動計算されます")
