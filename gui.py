@@ -1251,6 +1251,266 @@ def _dict_to_build(species: str, d: dict) -> "PokemonBuild":
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# 選出支援タブ
+# ─────────────────────────────────────────────────────────────────────────────
+
+class PokemonInfoCard(QGroupBox):
+    """選出支援タブ用：ポケモン1体の情報カード"""
+
+    def __init__(self, slot: int, parent=None):
+        super().__init__(f"#{slot + 1}", parent)
+        self.setMinimumWidth(170)
+        root = QVBoxLayout(self)
+        root.setSpacing(3)
+        root.setContentsMargins(6, 4, 6, 4)
+
+        self._name_lbl = QLabel("—")
+        self._name_lbl.setStyleSheet("font-weight:bold; font-size:13px;")
+        root.addWidget(self._name_lbl)
+
+        self._type_lbl = QLabel()
+        self._type_lbl.setWordWrap(True)
+        root.addWidget(self._type_lbl)
+
+        # 種族値
+        stat_grp = QGroupBox("種族値")
+        stat_grp.setFlat(True)
+        sl = QGridLayout(stat_grp)
+        sl.setSpacing(1)
+        sl.setContentsMargins(2, 2, 2, 2)
+        self._stat_labels: dict[str, QLabel] = {}
+        for col, (key, ja) in enumerate([("hp","H"),("attack","A"),("defense","B"),
+                                          ("sp_attack","C"),("sp_defense","D"),("speed","S")]):
+            lbl_key = QLabel(ja)
+            lbl_key.setStyleSheet("font-size:10px; color:#555; font-weight:bold;")
+            lbl_key.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            lbl_val = QLabel("—")
+            lbl_val.setStyleSheet("font-size:11px;")
+            lbl_val.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            sl.addWidget(lbl_key, 0, col)
+            sl.addWidget(lbl_val, 1, col)
+            self._stat_labels[key] = lbl_val
+        root.addWidget(stat_grp)
+
+        self._ability_lbl = QLabel()
+        self._ability_lbl.setStyleSheet("font-size:10px; color:#555;")
+        self._ability_lbl.setWordWrap(True)
+        root.addWidget(self._ability_lbl)
+
+        self._moves_lbl = QLabel()
+        self._moves_lbl.setStyleSheet("font-size:10px; color:#333;")
+        self._moves_lbl.setWordWrap(True)
+        root.addWidget(self._moves_lbl)
+
+        root.addStretch()
+        self.clear()
+
+    def clear(self):
+        self._name_lbl.setText("—")
+        self._type_lbl.clear()
+        for v in self._stat_labels.values():
+            v.setText("—")
+        self._ability_lbl.clear()
+        self._moves_lbl.clear()
+
+    def set_pokemon(self, key: str, score: float = 1.0):
+        pd = _POKEMON.get(key, {})
+        if not pd:
+            self._name_lbl.setText(key)
+            return
+        name_ja = pd.get("name_ja", key)
+        conf = f" ({score:.0%})" if score < 0.99 else ""
+        self._name_lbl.setText(name_ja + conf)
+
+        badges = []
+        for t in pd.get("types", []):
+            c = TYPE_COLOR.get(t, "#888")
+            n = TYPE_JA.get(t, t)
+            badges.append(
+                f'<span style="background:{c};color:white;'
+                f'padding:1px 6px;border-radius:3px;font-size:10px"> {n} </span>'
+            )
+        self._type_lbl.setText("  ".join(badges))
+
+        base = pd.get("base_stats", {})
+        for stat_key, lbl in self._stat_labels.items():
+            val = base.get(stat_key, "—")
+            lbl.setText(str(val))
+
+        abilities = pd.get("abilities", [])
+        if abilities:
+            self._ability_lbl.setText("特性: " + " / ".join(abilities[:2]))
+
+        moves = _get_learnable_moves(key)
+        top = [name for _, name in moves[1:6]]  # 先頭は空エントリなのでスキップ
+        if top:
+            self._moves_lbl.setText("技候補: " + "・".join(top))
+
+
+class SelectionSupportTab(QWidget):
+    """選出画面を自動検出し、両チームの情報を表示するタブ"""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._monitor = None
+        self._setup_ui()
+
+    def _setup_ui(self):
+        root = QVBoxLayout(self)
+        root.setSpacing(6)
+        root.setContentsMargins(6, 6, 6, 6)
+
+        # ── コントロール行 ──
+        ctrl = QHBoxLayout()
+        self.toggle_btn = QPushButton("監視開始")
+        self.toggle_btn.setCheckable(True)
+        self.toggle_btn.setStyleSheet(
+            "QPushButton { background:#27ae60; color:white; padding:4px 14px; border-radius:4px; }"
+            "QPushButton:checked { background:#c0392b; }"
+        )
+        self.toggle_btn.toggled.connect(self._on_toggle)
+        ctrl.addWidget(self.toggle_btn)
+
+        self.analyze_btn = QPushButton("手動解析")
+        self.analyze_btn.setFixedWidth(80)
+        self.analyze_btn.clicked.connect(self._manual_analyze)
+        ctrl.addWidget(self.analyze_btn)
+
+        self.status_lbl = QLabel("停止中")
+        self.status_lbl.setStyleSheet("color:#888; font-size:11px;")
+        ctrl.addWidget(self.status_lbl)
+        ctrl.addStretch()
+        root.addLayout(ctrl)
+
+        # ── 2カラム：自分 / 相手 ──
+        cols = QHBoxLayout()
+        cols.setSpacing(8)
+
+        own_grp = QGroupBox("自分のパーティ")
+        own_lay = QVBoxLayout(own_grp)
+        own_lay.setSpacing(4)
+        self._own_cards: list[PokemonInfoCard] = []
+        for i in range(6):
+            card = PokemonInfoCard(i)
+            own_lay.addWidget(card)
+            self._own_cards.append(card)
+        own_lay.addStretch()
+
+        opp_grp = QGroupBox("相手のパーティ")
+        opp_lay = QVBoxLayout(opp_grp)
+        opp_lay.setSpacing(4)
+        self._opp_cards: list[PokemonInfoCard] = []
+        for i in range(6):
+            card = PokemonInfoCard(i)
+            opp_lay.addWidget(card)
+            self._opp_cards.append(card)
+        opp_lay.addStretch()
+
+        own_scroll = QScrollArea()
+        own_scroll.setWidget(own_grp)
+        own_scroll.setWidgetResizable(True)
+        opp_scroll = QScrollArea()
+        opp_scroll.setWidget(opp_grp)
+        opp_scroll.setWidgetResizable(True)
+
+        cols.addWidget(own_scroll)
+        cols.addWidget(opp_scroll)
+        root.addLayout(cols, stretch=1)
+
+    # ── 監視制御 ──────────────────────────────────────────────────────────────
+
+    def set_window_title(self, title: str):
+        self._window_title = title
+
+    def _on_toggle(self, checked: bool):
+        if checked:
+            self._start()
+        else:
+            self._stop()
+
+    def _start(self):
+        from capture.selection_monitor import SelectionMonitor
+        window_title = getattr(self, "_window_title", "")
+        self._monitor = SelectionMonitor(window_title=window_title)
+        self._monitor.teams_detected.connect(self._on_teams_detected)
+        self._monitor.status_changed.connect(self._on_status)
+        self._monitor.start()
+        self.toggle_btn.setText("監視停止")
+        self.status_lbl.setText("起動中...")
+
+    def _stop(self):
+        if self._monitor:
+            self._monitor.stop()
+            self._monitor = None
+        self.toggle_btn.setText("監視開始")
+        self.status_lbl.setText("停止中")
+        self.status_lbl.setStyleSheet("color:#888; font-size:11px;")
+
+    def _manual_analyze(self):
+        """現在の画面を即座に解析（トリガー不要）"""
+        from capture.selection_monitor import SelectionMonitor
+        window_title = getattr(self, "_window_title", "")
+        self.status_lbl.setText("解析中...")
+        self.status_lbl.setStyleSheet("color:#2980b9; font-size:11px;")
+
+        class _OneShot(QThread):
+            done = pyqtSignal(list, list)
+            err  = pyqtSignal(str)
+            def __init__(self, wt):
+                super().__init__()
+                self._wt = wt
+            def run(self):
+                try:
+                    import mss, easyocr
+                    from capture.battle_monitor import load_battle_config
+                    cfg = load_battle_config()
+                    mon_idx = int(cfg.get("monitor", 1))
+                    reader = easyocr.Reader(["ja", "en"], gpu=False, verbose=False)
+                    mon_obj = SelectionMonitor(window_title=self._wt)
+                    with mss.mss() as sct:
+                        monitors = sct.monitors
+                        mon = monitors[mon_idx] if mon_idx < len(monitors) else monitors[1]
+                        frame = mon_obj._grab_frame(sct, mon)
+                    if frame is None:
+                        self.err.emit("画面キャプチャ失敗")
+                        return
+                    own = mon_obj._detect_own_team(frame, reader)
+                    opp = mon_obj._detect_opponent_team(frame)
+                    self.done.emit(own, opp)
+                except Exception as e:
+                    self.err.emit(str(e))
+
+        self._oneshot = _OneShot(window_title)
+        self._oneshot.done.connect(self._on_teams_detected)
+        self._oneshot.err.connect(lambda m: self._on_status(f"エラー: {m}"))
+        self._oneshot.start()
+
+    @pyqtSlot(list, list)
+    def _on_teams_detected(self, own_keys: list, opp_results: list):
+        for i, card in enumerate(self._own_cards):
+            key = own_keys[i] if i < len(own_keys) else ""
+            if key:
+                card.set_pokemon(key)
+            else:
+                card.clear()
+        for i, card in enumerate(self._opp_cards):
+            if i < len(opp_results) and opp_results[i]:
+                key, _name, score = opp_results[i]
+                card.set_pokemon(key, score)
+            else:
+                card.clear()
+
+    def _on_status(self, msg: str):
+        self.status_lbl.setText(msg)
+        if "失敗" in msg or "エラー" in msg:
+            self.status_lbl.setStyleSheet("color:#c0392b; font-size:11px;")
+        elif "完了" in msg or "検出" in msg:
+            self.status_lbl.setStyleSheet("color:#27ae60; font-weight:bold; font-size:11px;")
+        else:
+            self.status_lbl.setStyleSheet("color:#2980b9; font-size:11px;")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # アクティブパーティバー（自動検出タブ用）
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -1707,7 +1967,16 @@ class MainWindow(QMainWindow):
         cap_layout.addWidget(self.opponent_team_widget)
         cap_layout.addStretch()
 
-        # ── Tab 3: ポケモン登録 ──
+        # ── Tab 3: 選出支援 ──
+        self.selection_tab = SelectionSupportTab()
+        self._tabs.addTab(self.selection_tab, "選出支援")
+
+        # 自動検出タブのウィンドウ選択を選出支援タブにも連動
+        self.battle_monitor_widget.win_cb.currentIndexChanged.connect(
+            self._sync_selection_window
+        )
+
+        # ── Tab 4: ポケモン登録 ──
         self.reg_tab = BuildRegistrationTab()
         self.reg_tab.send_to_atk.connect(self._on_reg_send_to_atk)
         self.reg_tab.data_saved.connect(self.active_party_bar.refresh)
@@ -1763,6 +2032,12 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(f"自動検出: {name_ja} を自分に設定しました")
 
     @pyqtSlot(object)
+    def _sync_selection_window(self):
+        """自動検出タブのウィンドウ選択を選出支援タブに同期する"""
+        win_info = self.battle_monitor_widget.win_cb.currentData()
+        title = win_info.title if win_info else ""
+        self.selection_tab.set_window_title(title)
+
     def _on_reg_send_to_atk(self, build):
         """登録タブ → 攻撃パネルにビルドを送る"""
         self.atk_panel.set_build(build)
