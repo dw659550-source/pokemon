@@ -13,6 +13,8 @@ from PyQt6.QtWidgets import (
     QGridLayout, QGroupBox, QLabel, QComboBox, QSpinBox, QLineEdit,
     QCheckBox, QTableWidget, QTableWidgetItem, QHeaderView, QScrollArea,
     QPushButton, QSizePolicy, QFrame, QProgressBar, QTabWidget,
+    QSplitter, QListWidget, QListWidgetItem, QTextEdit, QInputDialog,
+    QMessageBox,
 )
 from PyQt6.QtCore import Qt, QTimer, QThread, pyqtSignal, pyqtSlot
 from PyQt6.QtGui import QColor, QFont
@@ -570,6 +572,10 @@ class EVWidget(QWidget):
     def get_evs(self) -> dict:
         return {k: s.value() for k, s in self._spins.items()}
 
+    def set_evs(self, evs: dict):
+        for k, s in self._spins.items():
+            s.setValue(evs.get(k, 0))
+
 
 class StatsDisplay(QWidget):
     """計算済みステータス表示（H/A/B/C/D/S 横一列）"""
@@ -764,6 +770,26 @@ class PokemonPanel(QGroupBox):
             ev_sp_defense=evs["sp_defense"], ev_speed=evs["speed"],
             is_mega=is_mega, mega_form=mega_form,
         )
+
+    def set_build(self, build: "PokemonBuild"):
+        """保存済みビルドをパネルに反映する"""
+        self.pokemon_cb.set_key(build.species)
+        for i in range(self.nature_cb.count()):
+            if self.nature_cb.itemData(i) == build.nature:
+                self.nature_cb.setCurrentIndex(i)
+                break
+        self.item_cb.set_key(build.item or "none")
+        self.ability_edit.setText(build.ability)
+        move_keys = (build.moves + ["", "", "", ""])[:4]
+        for cb, key in zip(self.move_cbs, move_keys):
+            cb.set_key(key)
+        self.ev_widget.set_evs({
+            "hp": build.ev_hp, "attack": build.ev_attack,
+            "defense": build.ev_defense, "sp_attack": build.ev_sp_attack,
+            "sp_defense": build.ev_sp_defense, "speed": build.ev_speed,
+        })
+        if self.mega_cb.isVisible():
+            self.mega_cb.setChecked(build.is_mega)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1175,6 +1201,316 @@ class ResultTable(QTableWidget):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# マイビルド永続化
+# ─────────────────────────────────────────────────────────────────────────────
+
+_MY_BUILDS_PATH = Path("data/my_builds.json")
+
+
+def _load_my_builds() -> dict:
+    if _MY_BUILDS_PATH.exists():
+        try:
+            with open(_MY_BUILDS_PATH, encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {"builds": {}, "parties": {}}
+
+
+def _save_my_builds(data: dict):
+    _MY_BUILDS_PATH.parent.mkdir(exist_ok=True)
+    with open(_MY_BUILDS_PATH, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+
+def _build_to_dict(build: "PokemonBuild", memo: str = "") -> dict:
+    return {
+        "nature": build.nature, "item": build.item, "ability": build.ability,
+        "moves": build.moves,
+        "ev_hp": build.ev_hp, "ev_attack": build.ev_attack,
+        "ev_defense": build.ev_defense, "ev_sp_attack": build.ev_sp_attack,
+        "ev_sp_defense": build.ev_sp_defense, "ev_speed": build.ev_speed,
+        "is_mega": build.is_mega, "mega_form": build.mega_form,
+        "memo": memo,
+    }
+
+
+def _dict_to_build(species: str, d: dict) -> "PokemonBuild":
+    return PokemonBuild(
+        species=species,
+        nature=d.get("nature", "hardy"),
+        item=d.get("item", "none"),
+        ability=d.get("ability", ""),
+        moves=d.get("moves", []),
+        ev_hp=d.get("ev_hp", 0), ev_attack=d.get("ev_attack", 0),
+        ev_defense=d.get("ev_defense", 0), ev_sp_attack=d.get("ev_sp_attack", 0),
+        ev_sp_defense=d.get("ev_sp_defense", 0), ev_speed=d.get("ev_speed", 0),
+        is_mega=d.get("is_mega", False), mega_form=d.get("mega_form", ""),
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ポケモン登録タブ
+# ─────────────────────────────────────────────────────────────────────────────
+
+class BuildRegistrationTab(QWidget):
+    """マイポケモン型登録・パーティ管理タブ"""
+    send_to_atk = pyqtSignal(object)  # PokemonBuild
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._data: dict = _load_my_builds()
+        self._current_species: str | None = None
+        self._setup_ui()
+        self._refresh_all()
+
+    # ── UI構築 ──────────────────────────────────────────────────────────────
+
+    def _setup_ui(self):
+        root = QVBoxLayout(self)
+        root.setSpacing(6)
+        root.setContentsMargins(6, 6, 6, 6)
+
+        # ── パーティ ──
+        party_grp = QGroupBox("パーティ")
+        party_lay = QVBoxLayout(party_grp)
+        party_lay.setSpacing(4)
+
+        name_row = QHBoxLayout()
+        name_row.addWidget(QLabel("パーティ名:"))
+        self.party_cb = QComboBox()
+        self.party_cb.setMinimumWidth(150)
+        self.party_cb.currentTextChanged.connect(self._on_party_changed)
+        name_row.addWidget(self.party_cb)
+        add_p = QPushButton("新規")
+        add_p.setFixedWidth(48)
+        add_p.clicked.connect(self._add_party)
+        name_row.addWidget(add_p)
+        del_p = QPushButton("削除")
+        del_p.setFixedWidth(48)
+        del_p.clicked.connect(self._del_party)
+        name_row.addWidget(del_p)
+        save_p = QPushButton("保存")
+        save_p.setFixedWidth(48)
+        save_p.clicked.connect(self._save_party)
+        name_row.addWidget(save_p)
+        name_row.addStretch()
+        party_lay.addLayout(name_row)
+
+        # 6スロット (2行×3列)
+        self._slot_cbs: list[QComboBox] = []
+        grid = QGridLayout()
+        grid.setSpacing(4)
+        for i in range(6):
+            row, col = divmod(i, 3)
+            lbl = QLabel(f"{i + 1}.")
+            lbl.setFixedWidth(18)
+            cb = QComboBox()
+            cb.setMinimumWidth(130)
+            self._slot_cbs.append(cb)
+            send_btn = QPushButton("→送る")
+            send_btn.setFixedWidth(58)
+            send_btn.clicked.connect(lambda _, idx=i: self._send_slot(idx))
+            grid.addWidget(lbl,      row, col * 3)
+            grid.addWidget(cb,       row, col * 3 + 1)
+            grid.addWidget(send_btn, row, col * 3 + 2)
+        party_lay.addLayout(grid)
+        root.addWidget(party_grp)
+
+        # ── ポケモン登録エリア (スプリッタ) ──
+        splitter = QSplitter(Qt.Orientation.Horizontal)
+
+        # 左: 登録済みリスト
+        left_w = QWidget()
+        ll = QVBoxLayout(left_w)
+        ll.setContentsMargins(0, 0, 0, 0)
+        ll.addWidget(QLabel("登録済みポケモン:"))
+        self.poke_list = QListWidget()
+        self.poke_list.currentRowChanged.connect(self._on_list_select)
+        ll.addWidget(self.poke_list)
+        splitter.addWidget(left_w)
+
+        # 右: 編集フォーム
+        right_w = QWidget()
+        rl = QVBoxLayout(right_w)
+        rl.setContentsMargins(0, 0, 0, 0)
+        rl.setSpacing(4)
+
+        scroll = QScrollArea()
+        self.build_panel = PokemonPanel("ポケモン登録")
+        scroll.setWidget(self.build_panel)
+        scroll.setWidgetResizable(True)
+        rl.addWidget(scroll)
+
+        memo_grp = QGroupBox("メモ")
+        memo_lay = QVBoxLayout(memo_grp)
+        memo_lay.setContentsMargins(4, 4, 4, 4)
+        self.memo_edit = QTextEdit()
+        self.memo_edit.setFixedHeight(70)
+        self.memo_edit.setPlaceholderText("型の説明など自由に...")
+        memo_lay.addWidget(self.memo_edit)
+        rl.addWidget(memo_grp)
+
+        btn_row = QHBoxLayout()
+        save_btn = QPushButton("保存")
+        save_btn.clicked.connect(self._save_build)
+        send_btn = QPushButton("攻撃パネルに送る")
+        send_btn.clicked.connect(self._send_current)
+        del_btn = QPushButton("削除")
+        del_btn.clicked.connect(self._delete_build)
+        btn_row.addWidget(save_btn)
+        btn_row.addWidget(send_btn)
+        btn_row.addStretch()
+        btn_row.addWidget(del_btn)
+        rl.addLayout(btn_row)
+
+        splitter.addWidget(right_w)
+        splitter.setSizes([160, 520])
+        root.addWidget(splitter)
+
+    # ── 更新 ──────────────────────────────────────────────────────────────────
+
+    def _refresh_all(self):
+        self._refresh_poke_list()
+        self._refresh_slot_cbs()
+        self._refresh_party_cb()
+
+    def _refresh_poke_list(self):
+        self.poke_list.clear()
+        for key in sorted(self._data.get("builds", {}).keys()):
+            name_ja = _POKEMON.get(key, {}).get("name_ja", key)
+            item = QListWidgetItem(name_ja)
+            item.setData(Qt.ItemDataRole.UserRole, key)
+            self.poke_list.addItem(item)
+
+    def _refresh_slot_cbs(self):
+        builds = self._data.get("builds", {})
+        for cb in self._slot_cbs:
+            cb.blockSignals(True)
+            cb.clear()
+            cb.addItem("（空）", userData="")
+            for key in sorted(builds.keys()):
+                name_ja = _POKEMON.get(key, {}).get("name_ja", key)
+                cb.addItem(name_ja, userData=key)
+            cb.blockSignals(False)
+
+    def _refresh_party_cb(self):
+        prev = self.party_cb.currentText()
+        self.party_cb.blockSignals(True)
+        self.party_cb.clear()
+        for name in self._data.get("parties", {}):
+            self.party_cb.addItem(name)
+        idx = self.party_cb.findText(prev)
+        self.party_cb.setCurrentIndex(max(0, idx))
+        self.party_cb.blockSignals(False)
+        self._on_party_changed(self.party_cb.currentText())
+
+    # ── パーティ操作 ──────────────────────────────────────────────────────────
+
+    def _on_party_changed(self, name: str):
+        slots = self._data.get("parties", {}).get(name, [""] * 6)
+        for i, cb in enumerate(self._slot_cbs):
+            key = slots[i] if i < len(slots) else ""
+            for j in range(cb.count()):
+                if cb.itemData(j) == key:
+                    cb.setCurrentIndex(j)
+                    break
+
+    def _add_party(self):
+        name, ok = QInputDialog.getText(self, "パーティ新規作成", "パーティ名:")
+        if not ok or not name.strip():
+            return
+        self._data.setdefault("parties", {})[name.strip()] = [""] * 6
+        _save_my_builds(self._data)
+        self._refresh_party_cb()
+        idx = self.party_cb.findText(name.strip())
+        if idx >= 0:
+            self.party_cb.setCurrentIndex(idx)
+
+    def _del_party(self):
+        name = self.party_cb.currentText()
+        if not name:
+            return
+        self._data.get("parties", {}).pop(name, None)
+        _save_my_builds(self._data)
+        self._refresh_party_cb()
+
+    def _save_party(self):
+        name = self.party_cb.currentText()
+        if not name:
+            return
+        self._data.setdefault("parties", {})[name] = [
+            cb.currentData() or "" for cb in self._slot_cbs
+        ]
+        _save_my_builds(self._data)
+
+    def _send_slot(self, idx: int):
+        key = self._slot_cbs[idx].currentData()
+        if not key:
+            return
+        d = self._data.get("builds", {}).get(key)
+        if d:
+            self.send_to_atk.emit(_dict_to_build(key, d))
+
+    # ── ポケモン操作 ──────────────────────────────────────────────────────────
+
+    def _on_list_select(self, row: int):
+        item = self.poke_list.item(row)
+        if not item:
+            return
+        key = item.data(Qt.ItemDataRole.UserRole)
+        self._current_species = key
+        d = self._data.get("builds", {}).get(key, {})
+        self.build_panel.set_build(_dict_to_build(key, d))
+        self.memo_edit.setPlainText(d.get("memo", ""))
+
+    def _save_build(self):
+        build = self.build_panel.get_build()
+        if not build.species:
+            return
+        memo = self.memo_edit.toPlainText()
+        self._data.setdefault("builds", {})[build.species] = _build_to_dict(build, memo)
+        _save_my_builds(self._data)
+        self._current_species = build.species
+        self._refresh_poke_list()
+        self._refresh_slot_cbs()
+        self._on_party_changed(self.party_cb.currentText())
+        for i in range(self.poke_list.count()):
+            if self.poke_list.item(i).data(Qt.ItemDataRole.UserRole) == build.species:
+                self.poke_list.setCurrentRow(i)
+                break
+
+    def _delete_build(self):
+        key = self._current_species
+        if not key:
+            return
+        name_ja = _POKEMON.get(key, {}).get("name_ja", key)
+        if QMessageBox.question(self, "削除確認", f"{name_ja} の登録を削除しますか？") \
+                != QMessageBox.StandardButton.Yes:
+            return
+        self._data.get("builds", {}).pop(key, None)
+        _save_my_builds(self._data)
+        self._current_species = None
+        self._refresh_poke_list()
+        self._refresh_slot_cbs()
+        self._on_party_changed(self.party_cb.currentText())
+
+    def _send_current(self):
+        build = self.build_panel.get_build()
+        if build.species:
+            self.send_to_atk.emit(build)
+
+    def load_build_for_species(self, key: str) -> bool:
+        """外部から呼び出し：登録済みビルドを atk に送る。なければ False を返す。"""
+        d = self._data.get("builds", {}).get(key)
+        if d:
+            self.send_to_atk.emit(_dict_to_build(key, d))
+            return True
+        return False
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # メインウィンドウ
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -1292,6 +1628,11 @@ class MainWindow(QMainWindow):
         cap_layout.addWidget(self.opponent_team_widget)
         cap_layout.addStretch()
 
+        # ── Tab 3: ポケモン登録 ──
+        self.reg_tab = BuildRegistrationTab()
+        self.reg_tab.send_to_atk.connect(self._on_reg_send_to_atk)
+        self._tabs.addTab(self.reg_tab, "ポケモン登録")
+
         self.statusBar().showMessage("準備完了  —  ポケモンと技を選ぶと自動計算されます")
 
     def _calculate(self):
@@ -1336,9 +1677,15 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(str, str)
     def _on_own_battle_detected(self, key: str, name_ja: str):
-        """自分のポケモン自動検出 → 自分パネルに反映"""
-        self.atk_panel.pokemon_cb.set_key(key)
+        """自分のポケモン自動検出 → 登録済みビルドがあれば丸ごとロード、なければ種族だけセット"""
+        if not self.reg_tab.load_build_for_species(key):
+            self.atk_panel.pokemon_cb.set_key(key)
         self.statusBar().showMessage(f"自動検出: {name_ja} を自分に設定しました")
+
+    @pyqtSlot(object)
+    def _on_reg_send_to_atk(self, build):
+        """登録タブ → 攻撃パネルにビルドを送る"""
+        self.atk_panel.set_build(build)
 
     @pyqtSlot(str)
     def _on_pokemon_detected(self, pokemon_key: str):
