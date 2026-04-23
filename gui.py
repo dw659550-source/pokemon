@@ -2032,7 +2032,7 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(f"自動検出: {name_ja} を自分に設定しました")
 
     @pyqtSlot(object)
-    def _sync_selection_window(self):
+    def _sync_selection_window(self, _index: int = 0):
         """自動検出タブのウィンドウ選択を選出支援タブに同期する"""
         win_info = self.battle_monitor_widget.win_cb.currentData()
         title = win_info.title if win_info else ""
