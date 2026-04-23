@@ -12,13 +12,13 @@ from capture.battle_monitor import load_battle_config, match_pokemon_name
 
 logger = logging.getLogger(__name__)
 
-# 自分チーム左パネルの座標比率
-OWN_X1, OWN_X2 = 0.00, 0.35
-OWN_Y1, OWN_Y2 = 0.09, 0.78
+# 自分チーム左パネルの座標比率（実画面計測値）
+OWN_X1, OWN_X2 = 0.05, 0.28   # 名前テキスト部分のみ（スプライト除く）
+OWN_Y1, OWN_Y2 = 0.16, 0.84   # 6スロット全体
 
-# OCRトリガー検索領域
-TRIGGER_X1, TRIGGER_X2 = 0.20, 0.80
-TRIGGER_Y1, TRIGGER_Y2 = 0.05, 0.50
+# OCRトリガー検索領域（中央）
+TRIGGER_X1, TRIGGER_X2 = 0.30, 0.75
+TRIGGER_Y1, TRIGGER_Y2 = 0.15, 0.45
 
 TRIGGER_TEXT = "選出してください"
 COOLDOWN_SEC = 25  # 同じ選出画面での再トリガー防止
@@ -99,15 +99,25 @@ class SelectionMonitor(QThread):
             x1 = int(w * OWN_X1)
             x2 = int(w * OWN_X2)
             slot = frame[y1:y2, x1:x2]
-            # 上半分だけ（ポケモン名行）を対象にする
+            # 上半分（ポケモン名行）だけ対象
             name_area = slot[: slot.shape[0] // 2, :]
-            gray = _cv2.cvtColor(name_area, _cv2.COLOR_BGR2GRAY)
-            _, thresh = _cv2.threshold(gray, 150, 255, _cv2.THRESH_BINARY)
-            big = _cv2.resize(thresh, (thresh.shape[1] * 2, thresh.shape[0] * 2),
+            # 白文字を抽出（低彩度・高輝度）
+            hsv = _cv2.cvtColor(name_area, _cv2.COLOR_BGR2HSV)
+            mask = (
+                (hsv[:, :, 1].astype(int) < 60) &
+                (hsv[:, :, 2].astype(int) > 160)
+            ).astype("uint8") * 255
+            # マスクが薄い場合（黄緑背景の選択行など）はグレースケール＋Otsuで補完
+            if mask.sum() < 500:
+                gray = _cv2.cvtColor(name_area, _cv2.COLOR_BGR2GRAY)
+                _, mask = _cv2.threshold(gray, 0, 255,
+                                         _cv2.THRESH_BINARY_INV + _cv2.THRESH_OTSU)
+            big = _cv2.resize(mask, (mask.shape[1] * 3, mask.shape[0] * 3),
                               interpolation=_cv2.INTER_NEAREST)
             texts = reader.readtext(big, detail=0)
             text = "".join(texts).strip()
             key, _ = match_pokemon_name(text) if text else (None, None)
+            logger.debug("Own slot %d: OCR=[%s] → key=%s", i, text, key)
             results.append(key or "")
         return results
 

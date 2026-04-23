@@ -665,8 +665,14 @@ class PokemonPanel(QGroupBox):
         self.ability_edit = QLineEdit()
         self.ability_edit.setPlaceholderText("特性キー")
         r3.addWidget(self.ability_edit, 3)
-        self.mega_cb = QCheckBox("メガ")
+        self.mega_cb = QPushButton("メガ")
+        self.mega_cb.setCheckable(True)
         self.mega_cb.setVisible(False)
+        self.mega_cb.setFixedWidth(52)
+        self.mega_cb.setStyleSheet(
+            "QPushButton { background:#ccc; color:#555; border-radius:4px; padding:2px 6px; }"
+            "QPushButton:checked { background:#9b59b6; color:white; font-weight:bold; }"
+        )
         r3.addWidget(self.mega_cb)
         root.addLayout(r3)
 
@@ -706,7 +712,7 @@ class PokemonPanel(QGroupBox):
         self.nature_cb.currentIndexChanged.connect(self._fire)
         self.item_cb.currentIndexChanged.connect(self._fire)
         self.ability_edit.textChanged.connect(self._fire)
-        self.mega_cb.stateChanged.connect(self._fire)
+        self.mega_cb.toggled.connect(self._fire)
         for cb in self.move_cbs:
             cb.currentIndexChanged.connect(self._fire)
         self.ev_widget.changed.connect(self._fire)
@@ -730,7 +736,7 @@ class PokemonPanel(QGroupBox):
         mega_forms = [k for k in pd if k.startswith("mega")]
         self.mega_cb.setVisible(bool(mega_forms))
         if mega_forms:
-            self.mega_cb.setText("メガシンカ")
+            self.mega_cb.setChecked(False)
             self.mega_cb.setProperty("mega_form", mega_forms[0])
         # 特性ヒント
         abilities = pd.get("abilities", [])
