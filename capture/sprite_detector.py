@@ -1,7 +1,7 @@
 """
 スプライト画像認識によるポケモン検出モジュール。
 チーム選択画面の右パネルから相手チーム6体のアイコンを切り出し、
-data/sprites/ の既知スプライトとヒストグラム照合する。
+data/sprites/ の既知スプライトとpHash照合する。
 """
 import json
 import logging
@@ -28,27 +28,73 @@ POKEMON_PATH    = Path(__file__).parent.parent / "data" / "pokemon.json"
 HIST_CACHE_PATH = Path(__file__).parent.parent / "data" / "sprite_hists.pkl"
 REGION_CONFIG_PATH = Path(__file__).parent.parent / "data" / "region_config.json"
 
-SPRITE_SIZE = 80  # ヒストグラム計算時の正規化サイズ
+SPRITE_SIZE = 80  # リサイズ用
 
 # ── 右パネル（相手チーム）の位置設定 ──────────────────────────────────────
-# スクリーン全体に対する比率。画面解像度が異なる場合は調整してください。
 REGION_CONFIG = {
-    # 右パネル（相手チーム）の位置 ── 画面幅・高さに対する比率
-    # チャンピオンズ選出画面の実測値
-    "panel_x1": 0.807,   # 右パネル左端
-    "panel_x2": 1.000,   # 右パネル右端（画面端）
-    # 各スロットの上端（6体分）
+    "panel_x1": 0.807,
+    "panel_x2": 1.000,
     "slot_tops":   [0.126, 0.255, 0.380, 0.508, 0.635, 0.762],
     "slot_height": 0.118,
-    # スロット内でのアイコン領域（スロット幅に対する比率）
-    # 右側にタイプアイコンがあるため左65%のみスプライト
     "icon_x1": 0.00,
     "icon_x2": 0.65,
 }
 
+# pHash キャッシュバージョン（旧ヒストグラムキャッシュを無効化）
+_CACHE_VERSION = 3
+
 
 # ─────────────────────────────────────────────────────────────────────────────
-# ヒストグラム計算
+# pHash 計算（numpy + PIL のみ、追加依存なし）
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _make_dct_matrix(n: int) -> "np.ndarray":
+    """DCT-II 基底行列 M[k,n] = cos(π*k*(2n+1)/(2N))"""
+    k = np.arange(n, dtype=np.float32)[:, np.newaxis]  # (N,1)
+    idx = np.arange(n, dtype=np.float32)[np.newaxis, :]  # (1,N)
+    return np.cos(np.pi * k * (2 * idx + 1) / (2 * n))  # (N,N)
+
+
+# キャッシュして毎回生成しない
+_DCT32: "np.ndarray | None" = None
+
+
+def _get_dct32() -> "np.ndarray":
+    global _DCT32
+    if _DCT32 is None:
+        _DCT32 = _make_dct_matrix(32)
+    return _DCT32
+
+
+def compute_phash(pil_img: "Image.Image", hash_size: int = 8) -> "np.ndarray":
+    """
+    64bit pHash（DCT-II ベース）。
+    Returns: uint8 array of length hash_size**2 (0 or 1)
+    """
+    size = hash_size * 4  # 32x32
+    gray = pil_img.convert("L").resize((size, size), Image.LANCZOS)
+    pixels = np.array(gray, dtype=np.float32)
+
+    M = _get_dct32()
+    dct2d = M @ pixels @ M.T  # 2D DCT-II
+
+    low = dct2d[:hash_size, :hash_size]  # 低周波 8x8 = 64値
+    mean = low.mean()
+    return (low > mean).flatten().astype(np.uint8)
+
+
+def phash_distance(h1: "np.ndarray", h2: "np.ndarray") -> int:
+    """ハミング距離（0 = 完全一致、64 = 完全不一致）"""
+    return int(np.count_nonzero(h1 != h2))
+
+
+def phash_score(h1: "np.ndarray", h2: "np.ndarray") -> float:
+    """類似度スコア [0, 1]（1 = 完全一致）"""
+    return 1.0 - phash_distance(h1, h2) / len(h1)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# BGR/mask ユーティリティ（アイコン前処理用）
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _pil_to_bgr(img: "Image.Image") -> "np.ndarray":
@@ -56,42 +102,30 @@ def _pil_to_bgr(img: "Image.Image") -> "np.ndarray":
     return cv2.cvtColor(arr, cv2.COLOR_RGB2BGR)
 
 
-def _make_alpha_mask(img: "Image.Image") -> "np.ndarray | None":
-    """透明背景スプライトのアルファマスク（なければ None）"""
-    if img.mode == "RGBA":
-        alpha = np.array(img)[:, :, 3]
-        return (alpha > 20).astype(np.uint8) * 255
-    return None
+def _bgr_to_pil(bgr: "np.ndarray") -> "Image.Image":
+    rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+    return Image.fromarray(rgb)
 
 
-def _make_bg_mask(bgr: "np.ndarray") -> "np.ndarray":
-    """キャプチャアイコンの赤/暗い背景を除いた前景マスクを返す"""
+def _remove_bg(bgr: "np.ndarray") -> "Image.Image":
+    """
+    キャプチャアイコンから赤/暗い背景を除去して PIL Image を返す。
+    透明部分は白で塗りつぶし（pHash はグレースケールなので色は不問）。
+    """
     hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
     red = cv2.bitwise_or(
         cv2.inRange(hsv, np.array([0,   50, 15]), np.array([15,  255, 160])),
         cv2.inRange(hsv, np.array([160, 50, 15]), np.array([180, 255, 160])),
     )
     dark = cv2.inRange(hsv, np.array([0, 0, 0]), np.array([180, 255, 30]))
-    fg = cv2.bitwise_not(cv2.bitwise_or(red, dark))
+    bg_mask = cv2.bitwise_or(red, dark)
     k = np.ones((3, 3), np.uint8)
-    return cv2.morphologyEx(fg, cv2.MORPH_OPEN, k)
+    bg_mask = cv2.morphologyEx(bg_mask, cv2.MORPH_CLOSE, k)
 
-
-def _compute_hist(bgr: "np.ndarray", mask: "np.ndarray | None") -> "np.ndarray":
-    """HSV 3 チャンネルのヒストグラムを計算・正規化して返す"""
-    resized = cv2.resize(bgr, (SPRITE_SIZE, SPRITE_SIZE))
-    if mask is not None:
-        mask_r = cv2.resize(mask, (SPRITE_SIZE, SPRITE_SIZE))
-    else:
-        mask_r = None
-    hsv = cv2.cvtColor(resized, cv2.COLOR_BGR2HSV)
-    hist = cv2.calcHist(
-        [hsv], [0, 1, 2], mask_r,
-        [18, 8, 8],
-        [0, 180, 0, 256, 0, 256],
-    )
-    cv2.normalize(hist, hist)
-    return hist.flatten()
+    # 背景を白に置換
+    result = bgr.copy()
+    result[bg_mask > 0] = [255, 255, 255]
+    return _bgr_to_pil(result)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -99,16 +133,14 @@ def _compute_hist(bgr: "np.ndarray", mask: "np.ndarray | None") -> "np.ndarray":
 # ─────────────────────────────────────────────────────────────────────────────
 
 class SpriteDatabase:
-    """既知スプライトのヒストグラムを管理する"""
+    """既知スプライトの pHash を管理する"""
 
     def __init__(self):
-        if not HAS_CV2:
-            raise RuntimeError("opencv-python が必要: pip install opencv-python")
         if not HAS_PIL:
             raise RuntimeError("Pillow が必要: pip install Pillow")
 
-        self._hists: dict[str, np.ndarray] = {}
-        self._names: dict[str, str] = {}  # key → name_ja
+        self._phashes: dict[str, np.ndarray] = {}
+        self._names: dict[str, str] = {}
         self._load_pokemon_names()
         self._load_or_build_cache()
 
@@ -121,16 +153,19 @@ class SpriteDatabase:
             logger.error("pokemon.json 読み込み失敗: %s", e)
 
     def _load_or_build_cache(self):
-        """キャッシュがあれば読み込み、なければスプライトから構築"""
         sprite_count = len(list(SPRITES_DIR.glob("*.png"))) if SPRITES_DIR.exists() else 0
 
         if HIST_CACHE_PATH.exists():
             try:
                 with open(HIST_CACHE_PATH, "rb") as f:
                     cached = pickle.load(f)
-                if cached.get("_count") == sprite_count and sprite_count > 0:
-                    self._hists = {k: v for k, v in cached.items() if not k.startswith("_")}
-                    logger.info("スプライトキャッシュ読み込み: %d 件", len(self._hists))
+                if (
+                    cached.get("_version") == _CACHE_VERSION
+                    and cached.get("_count") == sprite_count
+                    and sprite_count > 0
+                ):
+                    self._phashes = {k: v for k, v in cached.items() if not k.startswith("_")}
+                    logger.info("pHash キャッシュ読み込み: %d 件", len(self._phashes))
                     return
             except Exception:
                 pass
@@ -138,13 +173,12 @@ class SpriteDatabase:
         self._build_cache(sprite_count)
 
     def _build_cache(self, sprite_count: int):
-        """スプライト画像からヒストグラムを計算してキャッシュ"""
         if not SPRITES_DIR.exists() or sprite_count == 0:
             logger.warning("スプライトが見つかりません: %s", SPRITES_DIR)
             logger.warning("  先に python scripts/download_sprites.py を実行してください")
             return
 
-        logger.info("スプライトヒストグラムを構築中 (%d 件)...", sprite_count)
+        logger.info("pHash キャッシュ構築中 (%d 件)...", sprite_count)
         valid_keys = set(self._names.keys())
         built = 0
         for png in SPRITES_DIR.glob("*.png"):
@@ -152,34 +186,42 @@ class SpriteDatabase:
             if key not in valid_keys:
                 continue
             try:
-                img  = Image.open(png)
-                mask = _make_alpha_mask(img)
-                bgr  = _pil_to_bgr(img)
-                self._hists[key] = _compute_hist(bgr, mask)
+                img = Image.open(png).convert("RGBA")
+                # アルファチャンネルがある場合は透明部分を白に
+                bg = Image.new("RGB", img.size, (255, 255, 255))
+                bg.paste(img, mask=img.split()[3] if img.mode == "RGBA" else None)
+                self._phashes[key] = compute_phash(bg)
                 built += 1
             except Exception as e:
                 logger.debug("スプライト読み込み失敗 %s: %s", key, e)
 
-        cache = dict(self._hists)
+        cache: dict = dict(self._phashes)
+        cache["_version"] = _CACHE_VERSION
         cache["_count"] = sprite_count
         with open(HIST_CACHE_PATH, "wb") as f:
             pickle.dump(cache, f)
-        logger.info("ヒストグラムキャッシュ保存: %d 件", built)
+        logger.info("pHash キャッシュ保存: %d 件", built)
 
-    def find_best_match(self, icon_bgr: "np.ndarray", top_n: int = 3) -> list[tuple[str, str, float]]:
+    def find_best_match(
+        self, icon_bgr: "np.ndarray", top_n: int = 3
+    ) -> list[tuple[str, str, float]]:
         """
         アイコン画像と最も類似するポケモンを返す。
-        Returns: [(key, name_ja, score), ...] 上位 top_n 件
+        Returns: [(key, name_ja, score), ...] 上位 top_n 件（score は 0–1）
         """
-        if not self._hists:
+        if not self._phashes:
             return []
-        query_mask = _make_bg_mask(icon_bgr)
-        query_hist = _compute_hist(icon_bgr, query_mask)
+
+        # 背景除去してから pHash 計算
+        pil_clean = _remove_bg(icon_bgr)
+        query_hash = compute_phash(pil_clean)
+
         scores = []
-        for key, tmpl_hist in self._hists.items():
-            score = float(cv2.compareHist(query_hist, tmpl_hist, cv2.HISTCMP_CORREL))
+        for key, tmpl_hash in self._phashes.items():
+            score = phash_score(query_hash, tmpl_hash)
             scores.append((key, score))
         scores.sort(key=lambda x: x[1], reverse=True)
+
         return [
             (k, self._names.get(k, k), s)
             for k, s in scores[:top_n]
@@ -190,7 +232,7 @@ class SpriteDatabase:
         if HIST_CACHE_PATH.exists():
             HIST_CACHE_PATH.unlink()
         sprite_count = len(list(SPRITES_DIR.glob("*.png")))
-        self._hists.clear()
+        self._phashes.clear()
         self._build_cache(sprite_count)
 
 
@@ -219,7 +261,6 @@ def auto_detect_slots(
     panel_bgr = cv2.cvtColor(np.array(image.crop((px1, 0, px2, h))), cv2.COLOR_RGB2BGR)
     hsv = cv2.cvtColor(panel_bgr, cv2.COLOR_BGR2HSV)
 
-    # 暗い赤/マルーン色のマスク
     mask = cv2.bitwise_or(
         cv2.inRange(hsv, np.array([0,   80, 30]), np.array([15,  255, 180])),
         cv2.inRange(hsv, np.array([165, 80, 30]), np.array([180, 255, 180])),
@@ -228,12 +269,10 @@ def auto_detect_slots(
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, k)
     mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN,  k)
 
-    # 各行の赤ピクセル数 → パネル幅の20%以上なら「タイル行」
     row_red   = mask.sum(axis=1) / 255
     threshold = (px2 - px1) * 0.20
     in_tile   = row_red > threshold
 
-    # 連続する赤帯を区間としてまとめる
     bands: list[tuple[int, int]] = []
     start = None
     for y, flag in enumerate(in_tile):
@@ -245,15 +284,12 @@ def auto_detect_slots(
     if start is not None:
         bands.append((start, len(in_tile)))
 
-    # 上端10%はヘッダー（「pomelo」表示行）なので除外
     header_limit = int(len(in_tile) * 0.10)
     bands = [(s, e) for s, e in bands if s >= header_limit]
 
-    # 小さすぎる帯を除外（全高の4%未満）
     min_h = h * 0.04
     bands = [(s, e) for s, e in bands if (e - s) >= min_h]
 
-    # 高さが大きい順に n_slots 個を選んでY順に並べる
     bands.sort(key=lambda b: b[1] - b[0], reverse=True)
     bands = bands[:n_slots]
     bands.sort(key=lambda b: b[0])
@@ -262,11 +298,9 @@ def auto_detect_slots(
         logger.warning("赤タイル検出: %d/%d 件のみ検出", len(bands), n_slots)
         return None
 
-    # 中央値の高さを基準にして全スロットを統一（外れ値に強い）
-    # 0.88 倍でタイル境界へのはみ出しを防ぐ
     heights    = sorted(e - s for s, e in bands)
     ref_height = int(heights[len(heights) // 2] * 0.88)
-    icon_w     = int((px2 - px1) * 0.65)   # 横幅はパネル幅の65%（右側タイプアイコン除外）
+    icon_w     = int((px2 - px1) * 0.65)
 
     slots = [
         (px1, s, px1 + icon_w, s + ref_height)
@@ -281,7 +315,6 @@ def auto_detect_slots(
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _load_config() -> dict:
-    """data/region_config.json があれば優先して読み込む（なければ REGION_CONFIG）"""
     if REGION_CONFIG_PATH.exists():
         try:
             with open(REGION_CONFIG_PATH, encoding="utf-8") as f:
@@ -298,12 +331,10 @@ def detect_opponent_team(
 ) -> list[tuple[str, str, float]]:
     """
     チーム選択画面の右パネルから相手チーム最大6体を検出する。
-    calibrate_slots.py で保存した region_config.json を優先使用。
     """
     cfg = config or _load_config()
     w, h = image.size
 
-    # region_config.json が存在する場合はキャリブレーション済み座標を優先
     use_manual = config is None and REGION_CONFIG_PATH.exists()
     if use_manual:
         slots = None
@@ -311,7 +342,6 @@ def detect_opponent_team(
     else:
         slots = auto_detect_slots(image, panel_x1=cfg["panel_x1"], panel_x2=cfg["panel_x2"])
 
-    # ── 失敗時は REGION_CONFIG のフォールバック ──
     if slots is None:
         logger.info("フォールバック: REGION_CONFIG を使用")
         panel_x1 = int(w * cfg["panel_x1"])
@@ -334,23 +364,33 @@ def detect_opponent_team(
             continue
         icon_img = image.crop((ix1, iy1, ix2, iy2))
         debug_imgs.append(icon_img)
-        icon_bgr = _pil_to_bgr(icon_img)
-        matches  = db.find_best_match(icon_bgr, top_n=1)
+
+        if HAS_CV2:
+            icon_bgr = _pil_to_bgr(icon_img)
+            matches  = db.find_best_match(icon_bgr, top_n=1)
+        else:
+            # cv2 なしフォールバック：PIL で直接 pHash
+            query_hash = compute_phash(icon_img)
+            scores = [
+                (k, phash_score(query_hash, h))
+                for k, h in db._phashes.items()
+            ]
+            scores.sort(key=lambda x: x[1], reverse=True)
+            matches = [(k, db._names.get(k, k), s) for k, s in scores[:1]]
+
         if matches:
             key, name_ja, score = matches[0]
             results.append((key, name_ja, float(score)))
             logger.info("Slot %d: %s (score=%.3f)", len(results), name_ja, score)
 
     # デバッグ用：検出したスロット画像を横並びで保存
-    if debug_imgs:
+    if debug_imgs and HAS_CV2:
         try:
-            import cv2 as _cv2
-            import numpy as _np
-            strip = _np.hstack([
-                _cv2.resize(_pil_to_bgr(img), (80, 80))
+            strip = np.hstack([
+                cv2.resize(_pil_to_bgr(img), (80, 80))
                 for img in debug_imgs
             ])
-            _cv2.imwrite("debug_opp_slots.png", strip)
+            cv2.imwrite("debug_opp_slots.png", strip)
         except Exception:
             pass
 

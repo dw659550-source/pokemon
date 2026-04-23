@@ -1361,6 +1361,7 @@ class SelectionSupportTab(QWidget):
         self._monitor = None
         self._window_title = ""
         self._windows: list = []
+        self._party_keys: list[str] = []
         self._setup_ui()
         if HAS_CAPTURE:
             self._refresh_windows()
@@ -1447,6 +1448,12 @@ class SelectionSupportTab(QWidget):
         """外部から同期用（後方互換）"""
         self._window_title = title
 
+    def set_party_keys(self, keys: list[str]):
+        """ActivePartyBar から使用パーティの種族キーを受け取る。監視中なら即反映。"""
+        self._party_keys = [k for k in keys if k]
+        if self._monitor:
+            self._monitor.set_party_keys(self._party_keys)
+
     def _refresh_windows(self):
         if not HAS_CAPTURE:
             return
@@ -1470,6 +1477,7 @@ class SelectionSupportTab(QWidget):
         from capture.selection_monitor import SelectionMonitor
         window_title = getattr(self, "_window_title", "")
         self._monitor = SelectionMonitor(window_title=window_title)
+        self._monitor.set_party_keys(self._party_keys)
         self._monitor.teams_detected.connect(self._on_teams_detected)
         self._monitor.status_changed.connect(self._on_status)
         self._monitor.start()
@@ -1488,22 +1496,23 @@ class SelectionSupportTab(QWidget):
         """現在の画面を即座に解析（トリガー不要）"""
         from capture.selection_monitor import SelectionMonitor
         window_title = getattr(self, "_window_title", "")
+        party_keys   = list(self._party_keys)
         self.status_lbl.setText("解析中...")
         self.status_lbl.setStyleSheet("color:#2980b9; font-size:11px;")
 
         class _OneShot(QThread):
             done = pyqtSignal(list, list)
             err  = pyqtSignal(str)
-            def __init__(self, wt):
+            def __init__(self, wt, pkeys):
                 super().__init__()
-                self._wt = wt
+                self._wt    = wt
+                self._pkeys = pkeys
             def run(self):
                 try:
-                    import mss, easyocr
+                    import mss
                     from capture.battle_monitor import load_battle_config
                     cfg = load_battle_config()
                     mon_idx = int(cfg.get("monitor", 1))
-                    reader = easyocr.Reader(["ja", "en"], gpu=False, verbose=False)
                     mon_obj = SelectionMonitor(window_title=self._wt)
                     with mss.mss() as sct:
                         monitors = sct.monitors
@@ -1512,13 +1521,18 @@ class SelectionSupportTab(QWidget):
                     if frame is None:
                         self.err.emit("画面キャプチャ失敗")
                         return
-                    own = mon_obj._detect_own_team(frame, reader)
+                    if self._pkeys:
+                        own = list(self._pkeys)
+                    else:
+                        import easyocr
+                        reader = easyocr.Reader(["ja", "en"], gpu=False, verbose=False)
+                        own = mon_obj._detect_own_team(frame, reader)
                     opp = mon_obj._detect_opponent_team(frame)
                     self.done.emit(own, opp)
                 except Exception as e:
                     self.err.emit(str(e))
 
-        self._oneshot = _OneShot(window_title)
+        self._oneshot = _OneShot(window_title, party_keys)
         self._oneshot.done.connect(self._on_teams_detected)
         self._oneshot.err.connect(lambda m: self._on_status(f"エラー: {m}"))
         self._oneshot.start()
@@ -1618,6 +1632,11 @@ class ActivePartyBar(QGroupBox):
 
     def active_party_name(self) -> str:
         return self.party_cb.currentText()
+
+    def active_party_keys(self) -> list[str]:
+        """現在選択中のパーティの種族キーリスト（6要素）を返す"""
+        name = self.party_cb.currentText()
+        return self._data.get("parties", {}).get(name, [""] * 6)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -2014,10 +2033,22 @@ class MainWindow(QMainWindow):
             lambda _: self._sync_selection_window()
         )
 
+        # パーティ選択が変わったら選出支援タブにキーを同期
+        self.active_party_bar.party_cb.currentTextChanged.connect(
+            lambda _: self.selection_tab.set_party_keys(
+                self.active_party_bar.active_party_keys()
+            )
+        )
+
         # ── Tab 4: ポケモン登録 ──
         self.reg_tab = BuildRegistrationTab()
         self.reg_tab.send_to_atk.connect(self._on_reg_send_to_atk)
         self.reg_tab.data_saved.connect(self.active_party_bar.refresh)
+        self.reg_tab.data_saved.connect(
+            lambda: self.selection_tab.set_party_keys(
+                self.active_party_bar.active_party_keys()
+            )
+        )
         self._tabs.addTab(self.reg_tab, "ポケモン登録")
 
         self.statusBar().showMessage("準備完了  —  ポケモンと技を選ぶと自動計算されます")

@@ -37,6 +37,11 @@ class SelectionMonitor(QThread):
         self._window_title = window_title
         self._running = False
         self._last_trigger = 0.0
+        self._party_keys: list[str] = []
+
+    def set_party_keys(self, keys: list[str]):
+        """登録済みパーティの種族キーをセット。非空のとき OCR をスキップする。"""
+        self._party_keys = [k for k in keys if k]
 
     def stop(self):
         self._running = False
@@ -146,12 +151,14 @@ class SelectionMonitor(QThread):
             self.status_changed.emit("easyocr が必要: pip install easyocr")
             return
 
-        self.status_changed.emit("OCRモデル読み込み中...")
-        try:
-            reader = easyocr.Reader(["ja", "en"], gpu=False, verbose=False)
-        except Exception as e:
-            self.status_changed.emit(f"OCR初期化失敗: {e}")
-            return
+        reader = None
+        if not self._party_keys:
+            self.status_changed.emit("OCRモデル読み込み中...")
+            try:
+                reader = easyocr.Reader(["ja", "en"], gpu=False, verbose=False)
+            except Exception as e:
+                self.status_changed.emit(f"OCR初期化失敗: {e}")
+                return
 
         self.status_changed.emit("選出画面を監視中...")
         self._running = True
@@ -181,7 +188,10 @@ class SelectionMonitor(QThread):
                     self._last_trigger = now
                     self.status_changed.emit("選出画面を検出しました。解析中...")
 
-                    own = self._detect_own_team(frame, reader)
+                    if self._party_keys:
+                        own = list(self._party_keys)
+                    else:
+                        own = self._detect_own_team(frame, reader)
                     opp = self._detect_opponent_team(frame)
 
                     self.teams_detected.emit(own, opp)
