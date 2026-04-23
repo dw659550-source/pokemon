@@ -1973,7 +1973,7 @@ class MainWindow(QMainWindow):
 
         # 自動検出タブのウィンドウ選択を選出支援タブにも連動
         self.battle_monitor_widget.win_cb.currentIndexChanged.connect(
-            self._sync_selection_window
+            lambda _: self._sync_selection_window()
         )
 
         # ── Tab 4: ポケモン登録 ──
@@ -2032,7 +2032,7 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(f"自動検出: {name_ja} を自分に設定しました")
 
     @pyqtSlot(object)
-    def _sync_selection_window(self, _index: int = 0):
+    def _sync_selection_window(self):
         """自動検出タブのウィンドウ選択を選出支援タブに同期する"""
         win_info = self.battle_monitor_widget.win_cb.currentData()
         title = win_info.title if win_info else ""
