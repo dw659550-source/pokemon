@@ -1359,12 +1359,30 @@ class SelectionSupportTab(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._monitor = None
+        self._window_title = ""
+        self._windows: list = []
         self._setup_ui()
+        if HAS_CAPTURE:
+            self._refresh_windows()
 
     def _setup_ui(self):
         root = QVBoxLayout(self)
         root.setSpacing(6)
         root.setContentsMargins(6, 6, 6, 6)
+
+        # ── ウィンドウ選択 ──
+        win_row = QHBoxLayout()
+        win_row.addWidget(QLabel("キャプチャ対象:"))
+        self.win_cb = QComboBox()
+        self.win_cb.setMinimumWidth(240)
+        self.win_cb.currentIndexChanged.connect(lambda _: self._sync_window())
+        win_row.addWidget(self.win_cb)
+        ref_btn = QPushButton("更新")
+        ref_btn.setFixedWidth(48)
+        ref_btn.clicked.connect(self._refresh_windows)
+        win_row.addWidget(ref_btn)
+        win_row.addStretch()
+        root.addLayout(win_row)
 
         # ── コントロール行 ──
         ctrl = QHBoxLayout()
@@ -1426,7 +1444,21 @@ class SelectionSupportTab(QWidget):
     # ── 監視制御 ──────────────────────────────────────────────────────────────
 
     def set_window_title(self, title: str):
+        """外部から同期用（後方互換）"""
         self._window_title = title
+
+    def _refresh_windows(self):
+        if not HAS_CAPTURE:
+            return
+        self._windows = list_windows()
+        self.win_cb.clear()
+        self.win_cb.addItem("（モニター全体）", userData=None)
+        for w in self._windows:
+            self.win_cb.addItem(w.title, userData=w)
+
+    def _sync_window(self):
+        win = self.win_cb.currentData()
+        self._window_title = win.title if win else ""
 
     def _on_toggle(self, checked: bool):
         if checked:

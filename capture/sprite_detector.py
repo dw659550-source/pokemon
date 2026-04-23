@@ -34,15 +34,16 @@ SPRITE_SIZE = 80  # ヒストグラム計算時の正規化サイズ
 # スクリーン全体に対する比率。画面解像度が異なる場合は調整してください。
 REGION_CONFIG = {
     # 右パネル（相手チーム）の位置 ── 画面幅・高さに対する比率
-    # region_check.png で確認しながら調整してください
-    "panel_x1": 0.780,   # 右パネル左端
-    "panel_x2": 0.960,   # 右パネル右端
-    # 各スロットの上端（6体分）── region_check.png で確認済み
-    "slot_tops":   [0.107, 0.197, 0.287, 0.377, 0.467, 0.557],
-    "slot_height": 0.086,
+    # チャンピオンズ選出画面の実測値
+    "panel_x1": 0.807,   # 右パネル左端
+    "panel_x2": 1.000,   # 右パネル右端（画面端）
+    # 各スロットの上端（6体分）
+    "slot_tops":   [0.126, 0.255, 0.380, 0.508, 0.635, 0.762],
+    "slot_height": 0.118,
     # スロット内でのアイコン領域（スロット幅に対する比率）
+    # 右側にタイプアイコンがあるため左65%のみスプライト
     "icon_x1": 0.00,
-    "icon_x2": 0.40,
+    "icon_x2": 0.65,
 }
 
 
@@ -265,7 +266,7 @@ def auto_detect_slots(
     # 0.88 倍でタイル境界へのはみ出しを防ぐ
     heights    = sorted(e - s for s, e in bands)
     ref_height = int(heights[len(heights) // 2] * 0.88)
-    icon_w     = int((px2 - px1) * 0.30)   # 横幅はパネル幅の30%（アイテムアイコン除外）
+    icon_w     = int((px2 - px1) * 0.65)   # 横幅はパネル幅の65%（右側タイプアイコン除外）
 
     slots = [
         (px1, s, px1 + icon_w, s + ref_height)
@@ -327,15 +328,30 @@ def detect_opponent_team(
         ]
 
     results = []
+    debug_imgs = []
     for ix1, iy1, ix2, iy2 in slots:
         if ix2 <= ix1 or iy2 <= iy1:
             continue
         icon_img = image.crop((ix1, iy1, ix2, iy2))
+        debug_imgs.append(icon_img)
         icon_bgr = _pil_to_bgr(icon_img)
         matches  = db.find_best_match(icon_bgr, top_n=1)
         if matches:
             key, name_ja, score = matches[0]
             results.append((key, name_ja, float(score)))
-            logger.debug("Slot %d: %s (%.2f)", len(results), name_ja, score)
+            logger.info("Slot %d: %s (score=%.3f)", len(results), name_ja, score)
+
+    # デバッグ用：検出したスロット画像を横並びで保存
+    if debug_imgs:
+        try:
+            import cv2 as _cv2
+            import numpy as _np
+            strip = _np.hstack([
+                _cv2.resize(_pil_to_bgr(img), (80, 80))
+                for img in debug_imgs
+            ])
+            _cv2.imwrite("debug_opp_slots.png", strip)
+        except Exception:
+            pass
 
     return results
