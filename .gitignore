@@ -1,4 +1,24 @@
+# Python
 __pycache__/
 *.pyc
 *.pyo
 .env
+
+# 大容量データ（別PCで再ダウンロード可能）
+data/sprites/
+data/sprite_hists.pkl
+
+# 診断・デバッグ出力（ローカル作業ファイル）
+diagnose_full.png
+diagnose_own_slots/
+diagnose_type_slots/
+debug_*.png
+debug_opp_slots.png
+debug_own_crop.png
+
+# バックアップ
+data/type_icons_backup/
+
+# ユーザー固有の設定（別PCでは別の値になる）
+data/battle_config.json
+data/region_config.json

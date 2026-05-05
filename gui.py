@@ -980,6 +980,16 @@ class BattleMonitorWidget(QGroupBox):
         self.win_cb.setEnabled(True)
         self.refresh_btn.setEnabled(True)
 
+    def set_known_opp_keys(self, keys: list[str]):
+        """選出画面で判明した相手6体を対戦監視に反映する"""
+        if self._monitor:
+            self._monitor.set_known_opp_keys(keys)
+
+    def set_known_own_keys(self, keys: list[str]):
+        """選出画面で判明した自分6体を対戦監視に反映する"""
+        if self._monitor:
+            self._monitor.set_known_own_keys(keys)
+
     @pyqtSlot(str, str)
     def _on_detected(self, key: str, name_ja: str):
         self.opponent_detected.emit(key, name_ja)
@@ -1355,6 +1365,9 @@ class PokemonInfoCard(QGroupBox):
 
 class SelectionSupportTab(QWidget):
     """選出画面を自動検出し、両チームの情報を表示するタブ"""
+    # 選出検出完了後、両チームの既知キーを通知するシグナル
+    opp_team_known = pyqtSignal(list)  # list[str]: 相手6体のキー
+    own_team_known = pyqtSignal(list)  # list[str]: 自分6体のキー
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -1551,6 +1564,14 @@ class SelectionSupportTab(QWidget):
                 card.set_pokemon(key, score)
             else:
                 card.clear()
+
+        # 対戦中OCRの候補を判明した6体に絞るため通知
+        opp_keys = [r[0] for r in opp_results if r]
+        if opp_keys:
+            self.opp_team_known.emit(opp_keys)
+        own_valid = [k for k in own_keys if k]
+        if own_valid:
+            self.own_team_known.emit(own_valid)
 
     def _on_status(self, msg: str):
         self.status_lbl.setText(msg)
@@ -2027,6 +2048,14 @@ class MainWindow(QMainWindow):
         # ── Tab 3: 選出支援 ──
         self.selection_tab = SelectionSupportTab()
         self._tabs.addTab(self.selection_tab, "選出支援")
+
+        # 選出完了後、判明した6体を対戦モニターの照合候補に反映
+        self.selection_tab.opp_team_known.connect(
+            self.battle_monitor_widget.set_known_opp_keys
+        )
+        self.selection_tab.own_team_known.connect(
+            self.battle_monitor_widget.set_known_own_keys
+        )
 
         # 自動検出タブのウィンドウ選択を選出支援タブにも連動
         self.battle_monitor_widget.win_cb.currentIndexChanged.connect(

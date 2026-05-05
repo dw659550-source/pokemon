@@ -13,8 +13,11 @@ from capture.battle_monitor import load_battle_config, match_pokemon_name
 logger = logging.getLogger(__name__)
 
 # 自分チーム左パネルの座標比率（実画面計測値）
-OWN_X1, OWN_X2 = 0.05, 0.28   # 名前テキスト部分のみ（スプライト除く）
-OWN_Y1, OWN_Y2 = 0.16, 0.84   # 6スロット全体
+OWN_X1, OWN_X2 = 0.034, 0.200  # ポケモン名テキスト列のみ（スプライト除く）
+OWN_Y1, OWN_Y2 = 0.100, 0.840  # 6スロット全体
+
+# 同一スロット内y間隔(~130px) vs スロット間(~240px) の境界（3x拡大画像基準）
+_SAME_SLOT_GAP = 190
 
 # OCRトリガー検索領域（中央）
 TRIGGER_X1, TRIGGER_X2 = 0.30, 0.75
@@ -93,37 +96,54 @@ class SelectionMonitor(QThread):
         return TRIGGER_TEXT in joined
 
     def _detect_own_team(self, frame, reader) -> list[str]:
-        """左パネルをOCRして自分の6体を特定する"""
+        """
+        左パネル全体をOCRして自分の6体を特定する。
+        y座標ギャップでポケモン名行とアイテム名行を判別するため
+        スロット座標の分割が不要。
+        """
         import cv2 as _cv2
         h, w = frame.shape[:2]
+        x1 = int(w * OWN_X1)
+        x2 = int(w * OWN_X2)
+        y1 = int(h * OWN_Y1)
+        y2 = int(h * OWN_Y2)
+
+        panel = frame[y1:y2, x1:x2]
+        hsv = _cv2.cvtColor(panel, _cv2.COLOR_BGR2HSV)
+        mask = (
+            (hsv[:, :, 1].astype(int) < 60) &
+            (hsv[:, :, 2].astype(int) > 160)
+        ).astype("uint8") * 255
+        if mask.sum() < 1000:
+            gray = _cv2.cvtColor(panel, _cv2.COLOR_BGR2GRAY)
+            _, mask = _cv2.threshold(gray, 0, 255,
+                                     _cv2.THRESH_BINARY_INV + _cv2.THRESH_OTSU)
+        big = _cv2.resize(mask, (mask.shape[1] * 3, mask.shape[0] * 3),
+                          interpolation=_cv2.INTER_NEAREST)
+
+        ocr_results = reader.readtext(big, detail=1)
+        items = []
+        for (bbox, text, conf) in ocr_results:
+            if not text or conf < 0.25:
+                continue
+            ys = [pt[1] for pt in bbox]
+            items.append((sum(ys) / len(ys), text.strip()))
+        items.sort(key=lambda x: x[0])
+
         results: list[str] = []
-        slot_h = (OWN_Y2 - OWN_Y1) / 6
-        for i in range(6):
-            y1 = int(h * (OWN_Y1 + i * slot_h))
-            y2 = int(h * (OWN_Y1 + (i + 1) * slot_h))
-            x1 = int(w * OWN_X1)
-            x2 = int(w * OWN_X2)
-            slot = frame[y1:y2, x1:x2]
-            # 上半分（ポケモン名行）だけ対象
-            name_area = slot[: slot.shape[0] // 2, :]
-            # 白文字を抽出（低彩度・高輝度）
-            hsv = _cv2.cvtColor(name_area, _cv2.COLOR_BGR2HSV)
-            mask = (
-                (hsv[:, :, 1].astype(int) < 60) &
-                (hsv[:, :, 2].astype(int) > 160)
-            ).astype("uint8") * 255
-            # マスクが薄い場合（黄緑背景の選択行など）はグレースケール＋Otsuで補完
-            if mask.sum() < 500:
-                gray = _cv2.cvtColor(name_area, _cv2.COLOR_BGR2GRAY)
-                _, mask = _cv2.threshold(gray, 0, 255,
-                                         _cv2.THRESH_BINARY_INV + _cv2.THRESH_OTSU)
-            big = _cv2.resize(mask, (mask.shape[1] * 3, mask.shape[0] * 3),
-                              interpolation=_cv2.INTER_NEAREST)
-            texts = reader.readtext(big, detail=0)
-            text = "".join(texts).strip()
-            key, _ = match_pokemon_name(text) if text else (None, None)
-            logger.debug("Own slot %d: OCR=[%s] → key=%s", i, text, key)
-            results.append(key or "")
+        seen_keys: set[str] = set()
+        last_y = -9999
+        for y_center, text in items:
+            if y_center - last_y < _SAME_SLOT_GAP:
+                last_y = y_center
+                continue  # アイテム行スキップ
+            last_y = y_center
+            key, _ = match_pokemon_name(text)
+            if key and key not in seen_keys:
+                seen_keys.add(key)
+                results.append(key)
+                logger.debug("Own team OCR: [%s] → %s", text, key)
+
         return results
 
     def _detect_opponent_team(self, frame) -> list[tuple]:

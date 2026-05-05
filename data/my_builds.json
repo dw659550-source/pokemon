@@ -1,0 +1,104 @@
+{
+  "builds": {
+    "mimikyu": {
+      "nature": "hardy",
+      "item": "life-orb",
+      "ability": "disguise",
+      "moves": [],
+      "ev_hp": 0,
+      "ev_attack": 0,
+      "ev_defense": 0,
+      "ev_sp_attack": 0,
+      "ev_sp_defense": 0,
+      "ev_speed": 0,
+      "is_mega": false,
+      "mega_form": "",
+      "memo": "あ"
+    },
+    "hydreigon": {
+      "nature": "hardy",
+      "item": "life-orb",
+      "ability": "disguise",
+      "moves": [],
+      "ev_hp": 0,
+      "ev_attack": 0,
+      "ev_defense": 0,
+      "ev_sp_attack": 0,
+      "ev_sp_defense": 0,
+      "ev_speed": 0,
+      "is_mega": false,
+      "mega_form": "",
+      "memo": "あ"
+    },
+    "garchomp": {
+      "nature": "hardy",
+      "item": "life-orb",
+      "ability": "disguise",
+      "moves": [],
+      "ev_hp": 0,
+      "ev_attack": 0,
+      "ev_defense": 0,
+      "ev_sp_attack": 0,
+      "ev_sp_defense": 0,
+      "ev_speed": 0,
+      "is_mega": false,
+      "mega_form": "",
+      "memo": "あ"
+    },
+    "charizard": {
+      "nature": "hardy",
+      "item": "life-orb",
+      "ability": "disguise",
+      "moves": [],
+      "ev_hp": 0,
+      "ev_attack": 0,
+      "ev_defense": 0,
+      "ev_sp_attack": 0,
+      "ev_sp_defense": 0,
+      "ev_speed": 0,
+      "is_mega": false,
+      "mega_form": "",
+      "memo": "あ"
+    },
+    "toxapex": {
+      "nature": "hardy",
+      "item": "life-orb",
+      "ability": "disguise",
+      "moves": [],
+      "ev_hp": 0,
+      "ev_attack": 0,
+      "ev_defense": 0,
+      "ev_sp_attack": 0,
+      "ev_sp_defense": 0,
+      "ev_speed": 0,
+      "is_mega": false,
+      "mega_form": "",
+      "memo": "あ"
+    },
+    "corviknight": {
+      "nature": "hardy",
+      "item": "life-orb",
+      "ability": "disguise",
+      "moves": [],
+      "ev_hp": 0,
+      "ev_attack": 0,
+      "ev_defense": 0,
+      "ev_sp_attack": 0,
+      "ev_sp_defense": 0,
+      "ev_speed": 0,
+      "is_mega": false,
+      "mega_form": "",
+      "memo": "あ"
+    }
+  },
+  "parties": {
+    "test": [
+      "charizard",
+      "corviknight",
+      "garchomp",
+      "toxapex",
+      "mimikyu",
+      "hydreigon"
+    ]
+  }
+}

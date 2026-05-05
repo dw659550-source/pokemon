@@ -150,6 +150,46 @@ def match_pokemon_name(text: str) -> tuple[str, str] | tuple[None, None]:
     return None, None
 
 
+def match_pokemon_name_restricted(
+    text: str, allowed_keys: set[str]
+) -> "tuple[str, str] | tuple[None, None]":
+    """
+    allowed_keys に含まれるポケモンだけを対象にした名前マッチング。
+    選出画面で判明した6体に絞ることで誤検出を減らす。
+    """
+    name_map = _get_name_map()
+    text_n = _normalize(text)
+    if not text_n or not allowed_keys:
+        return None, None
+
+    restricted = {n: k for n, k in name_map.items() if k in allowed_keys}
+    norm_map: dict[str, tuple[str, str]] = {
+        _normalize(n): (n, k) for n, k in restricted.items()
+    }
+
+    if text_n in norm_map:
+        orig, key = norm_map[text_n]
+        return key, orig
+
+    for n_norm, (orig, key) in norm_map.items():
+        if n_norm and (n_norm in text_n or text_n in n_norm):
+            return key, orig
+
+    for variant in _ocr_variants(text_n):
+        if variant == text_n:
+            continue
+        if variant in norm_map:
+            orig, key = norm_map[variant]
+            return key, orig
+
+    candidates = difflib.get_close_matches(text_n, norm_map.keys(), n=1, cutoff=0.55)
+    if candidates:
+        orig, key = norm_map[candidates[0]]
+        return key, orig
+
+    return None, None
+
+
 # ── BattleMonitor ─────────────────────────────────────────────────────────────
 
 def _ocr_preprocess(crop_bgr, cv2_mod, np_mod):
@@ -194,6 +234,18 @@ class BattleMonitor(QThread):
         self._prev_name    = ""
         self._prev_own     = ""
         self._empty_frames = 0  # OCRが空だったフレーム数（交代検出用）
+        self._known_opp_keys: set[str] = set()
+        self._known_own_keys: set[str] = set()
+
+    def set_known_opp_keys(self, keys: list[str]):
+        """選出画面で判明した相手6体のキーをセット。対戦中のOCR照合をこの6体に限定する。"""
+        self._known_opp_keys = {k for k in keys if k}
+        logger.info("相手の既知キー更新: %s", self._known_opp_keys)
+
+    def set_known_own_keys(self, keys: list[str]):
+        """選出画面で判明した自分6体のキーをセット。"""
+        self._known_own_keys = {k for k in keys if k}
+        logger.info("自分の既知キー更新: %s", self._known_own_keys)
 
     def update_config(self, cfg: dict):
         self._cfg = cfg
@@ -290,7 +342,11 @@ class BattleMonitor(QThread):
                         texts2 = reader.readtext(proc2, detail=0)
                         text2  = "".join(texts2).strip()
                         if text2 and text2 != self._prev_own:
-                            key2, name2 = match_pokemon_name(text2)
+                            key2, name2 = match_pokemon_name_restricted(
+                                text2, self._known_own_keys
+                            )
+                            if not key2:
+                                key2, name2 = match_pokemon_name(text2)
                             if key2:
                                 self._prev_own = text2
                                 self.own_changed.emit(key2, name2)
@@ -330,7 +386,12 @@ class BattleMonitor(QThread):
                     else:
                         self._empty_frames = 0
                         if text != self._prev_name:
-                            key, name_ja = match_pokemon_name(text)
+                            # 既知6体に限定して照合 → 失敗時は全体から照合
+                            key, name_ja = match_pokemon_name_restricted(
+                                text, self._known_opp_keys
+                            )
+                            if not key:
+                                key, name_ja = match_pokemon_name(text)
                             if key:
                                 self._prev_name = text
                                 self.opponent_changed.emit(key, name_ja)
